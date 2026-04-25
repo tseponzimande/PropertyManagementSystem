@@ -1,0 +1,33 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ "main", "Dev" ]
+  pull_request:
+    branches: [ "main", "Dev" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      CONFIGURATION: Release
+      SOLUTION: PropertyManagementSystem.sln
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore $env:SOLUTION
+
+    - name: Build solution
+      run: dotnet build $env:SOLUTION --configuration $env:CONFIGURATION --no-restore
+
+    - name: Run tests
+      run: dotnet test $env:SOLUTION --configuration $env:CONFIGURATION --no-build
