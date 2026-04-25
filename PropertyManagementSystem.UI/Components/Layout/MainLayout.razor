@@ -1,23 +1,49 @@
-﻿@inherits LayoutComponentBase
+﻿@using Radzen
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<RadzenComponents @rendermode="InteractiveServer" />
+
+<RadzenLayout Style="height:100vh">
+
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     AlignItems="AlignItems.Center"
+                     JustifyContent="JustifyContent.SpaceBetween"
+                     Style="width:100%">
+
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="10px">
+                <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
+                <RadzenLabel Text="PMS" />
+            </RadzenStack>
+
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="15px">
+                <RadzenAppearanceToggle />
+
+                @* <RadzenButton ButtonStyle="ButtonStyle.Light"
+                              Style="position:relative; padding:6px;"
+                              Click="@ToggleNotifications">
+
+                    <RadzenIcon Icon="notifications" Style="font-size:20px;" />
+
+                    @if (NotificationService.UnreadCount > 0)
+                    {
+                        <RadzenBadge Text="@NotificationService.UnreadCount.ToString()"
+                                     Style="position:absolute; top:-5px; right:-5px;" />
+                    }
+                </RadzenButton> *@
+
+                @* <RadzenButton Text="Logout" Icon="logout" Variant="Variant.Text" ButtonStyle="ButtonStyle.Light" Click="@GoToLogout" /> *@
+            </RadzenStack>
+
+        </RadzenStack>
+    </RadzenHeader>
+
+    <RadzenSidebar @bind-Expanded="@sidebar1Expanded">
         <NavMenu />
-    </div>
+    </RadzenSidebar>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <RadzenBody>
+        @Body
+    </RadzenBody>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+</RadzenLayout>
