@@ -1,0 +1,86 @@
+﻿@page "/login"
+@using PropertyManagementSystem.Application.DTOs.Auth.Request
+@using PropertyManagementSystem.UI.Components.Layout
+@layout LandingLayout
+
+<PageTitle>Sign In — Property Management System</PageTitle>
+
+<div class="auth-card-wrapper">
+    <RadzenCard class="auth-card">
+ 
+        <div class="auth-card-brand">
+            <RadzenIcon Icon="apartment" Style="font-size:2.8rem;color:var(--rz-primary)" />
+            <div>
+                <h2 class="auth-card-title">Property Management</h2>
+                <p class="auth-card-subtitle">Sign in to your account</p>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger"
+                         Variant="Variant.Flat" 
+                         Size="AlertSize.Small"
+                         Close="@(() => errorMessage = null)"
+                         Style="margin-bottom:1rem">
+                @errorMessage
+            </RadzenAlert>
+        }
+
+        <RadzenTemplateForm TItem="LoginRequestDto"
+                            Data="@model"
+                            Submit="@UserLogin">
+
+            <RadzenStack Gap="1rem">
+
+                <RadzenFormField Text="Email address" Variant="Variant.Outlined" Style="width:100%">
+                    <ChildContent>
+                        <RadzenTextBox @bind-Value="@model.Email"
+                                       Name="Email"
+                                       Placeholder="you@example.com"
+                                       InputType="InputType.Email"
+                                       Style="width:100%" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Component="Email" Text="Email is required" />
+                        <RadzenEmailValidator Component="Email" Text="Enter a valid email address" />
+                    </Helper>
+                </RadzenFormField>
+
+                <RadzenFormField Text="Password" Variant="Variant.Outlined" Style="width:100%">
+                    <ChildContent>
+                        <RadzenPassword @bind-Value="@model.Password"
+                                        Name="Password"
+                                        Placeholder="••••••••"
+                                        Style="width:100%" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Component="Password" Text="Password is required" />
+                    </Helper>
+                </RadzenFormField>
+
+                <div style="text-align:right;margin-top:-0.5rem">
+                    <RadzenLink Text="Forgot your password?"
+                                Path="/forgot-password"
+                                Style="font-size:0.82rem" />
+                </div>
+
+               
+                <RadzenButton ButtonType="ButtonType.Submit"
+                              Text="Sign In"
+                              Icon="login"
+                              Style="width:100%"
+                              IsBusy="@isLoading"
+                              BusyText="Signing in..." />
+
+            </RadzenStack>
+        </RadzenTemplateForm>
+
+       
+        <div class="auth-card-footer">
+            <span>Don't have an account?</span>
+            <RadzenLink Text="Create one" Path="/register" />
+        </div>
+
+    </RadzenCard>
+</div>

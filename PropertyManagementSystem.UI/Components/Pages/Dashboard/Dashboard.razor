@@ -1,0 +1,278 @@
+﻿@page "/dashboard"
+@using PropertyManagementSystem.Application.DTOs
+
+<PageTitle>Dashboard — PMS</PageTitle>
+
+<RadzenStack Gap="1.5rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween"
+                 Wrap="FlexWrap.Wrap"
+                 Gap="0.5rem">
+        <div>
+            <h2 style="margin:0">@GetGreeting(), @currentUser?.Name?.Split(' ')[0] 👋</h2>
+            <p style="margin:0;color:var(--rz-text-secondary-color);font-size:0.85rem">
+                @DateTime.Now.ToString("dddd, dd MMMM yyyy") — Role: <strong>@currentUser?.Role</strong>
+            </p>
+        </div>
+        <RadzenButton Text="Refresh"
+                      Icon="refresh"
+                      ButtonStyle="ButtonStyle.Light"
+                      Size="ButtonSize.Small"
+                      Click="@LoadDashboard"
+                      IsBusy="@isLoading" />
+    </RadzenStack>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" AllowClose="true"
+                     Close="@(() => errorMessage = null)">
+            @errorMessage
+        </RadzenAlert>
+    }
+
+    <RadzenRow Gap="1rem">
+
+        <AuthorizeView Roles="Admin,Owner">
+            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                <StatCard Title="Total Properties"
+                          Value="@stats?.TotalProperties.ToString()"
+                          Icon="home_work"
+                          Color="Primary"
+                          SubText="registered"
+                          IsLoading="@isLoading" />
+            </RadzenColumn>
+            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                <StatCard Title="Occupied Units"
+                          Value="@stats?.OccupiedUnits.ToString()"
+                          Icon="meeting_room"
+                          Color="Success"
+                          SubText="@($"of {stats?.TotalUnits} total")"
+                          IsLoading="@isLoading" />
+            </RadzenColumn>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,Owner">
+            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                <StatCard Title="Revenue This Month"
+                          Value="@stats?.TotalRevenueThisMonth.ToString("C0")"
+                          Icon="payments"
+                          Color="Warning"
+                          SubText="@($"{stats?.TotalRevenueThisYear:C0} this year")"
+                          IsLoading="@isLoading" />
+            </RadzenColumn>
+        </AuthorizeView>
+
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="Open Maintenance"
+                      Value="@stats?.PendingMaintenanceRequests.ToString()"
+                      Icon="build"
+                      Color="Danger"
+                      SubText="@($"{stats?.InProgressMaintenanceRequests} in progress")"
+                      IsLoading="@isLoading" />
+        </RadzenColumn>
+
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="Active Leases"
+                      Value="@stats?.ActiveLeases.ToString()"
+                      Icon="description"
+                      Color="Info"
+                      SubText="@($"{stats?.ExpiredLeases} expired")"
+                      IsLoading="@isLoading" />
+        </RadzenColumn>
+
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="Unread Messages"
+                      Value="@stats?.UnreadMessages.ToString()"
+                      Icon="chat"
+                      Color="Primary"
+                      IsLoading="@isLoading" />
+        </RadzenColumn>
+
+        <AuthorizeView Roles="Admin">
+            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                <StatCard Title="Pending Approvals"
+                          Value="@stats?.PendingPropertyApprovals.ToString()"
+                          Icon="pending_actions"
+                          Color="Warning"
+                          SubText="properties awaiting review"
+                          IsLoading="@isLoading" />
+            </RadzenColumn>
+            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                <StatCard Title="Total Tenants"
+                          Value="@stats?.TotalTenants.ToString()"
+                          Icon="people"
+                          Color="Success"
+                          SubText="@($"{stats?.TotalOwners} owners")"
+                          IsLoading="@isLoading" />
+            </RadzenColumn>
+        </AuthorizeView>
+
+    </RadzenRow>
+
+    <AuthorizeView Roles="Admin,Owner">
+        <RadzenRow Gap="1rem">
+
+            <RadzenColumn SizeXS="12" SizeLG="7">
+                <RadzenCard>
+                    <RadzenStack Orientation="Orientation.Horizontal"
+                                 AlignItems="AlignItems.Center"
+                                 JustifyContent="JustifyContent.SpaceBetween"
+                                 Style="margin-bottom:1rem">
+                        <h4 style="margin:0">Revenue Trend (12 months)</h4>
+                        @if (paymentTrends is not null)
+                        {
+                            <RadzenBadge Text="@($"Avg {paymentTrends.AverageMonthlyRevenue:C0}/mo")"
+                                         BadgeStyle="BadgeStyle.Info" />
+                        }
+                    </RadzenStack>
+
+                    @if (isLoadingCharts)
+                    {
+                        <div style="height:200px;display:flex;align-items:center;justify-content:center">
+                            <RadzenProgressBarCircular Value="100" ShowValue="false"
+                                                       Mode="ProgressBarMode.Indeterminate" />
+                        </div>
+                    }
+                    else if (paymentTrends?.MonthlyTrends?.Any() == true)
+                    {
+                        <RadzenChart Style="height:220px">
+                            <RadzenLineSeries Data="@paymentTrends.MonthlyTrends"
+                                              CategoryProperty="Month"
+                                              ValueProperty="Revenue"
+                                              Title="Revenue"
+                                              Smooth="true">
+                                <RadzenSeriesDataLabels Visible="false" />
+                                <RadzenMarkers MarkerType="MarkerType.Circle" />
+                            </RadzenLineSeries>
+                            <RadzenCategoryAxis />
+                            <RadzenValueAxis Formatter="@((v) => ((decimal)v).ToString("C0"))" />
+                            <RadzenLegend Visible="false" />
+                        </RadzenChart>
+                    }
+                    else
+                    {
+                        <EmptyState Message="No revenue data available yet" Icon="bar_chart" />
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn SizeXS="12" SizeLG="5">
+                <RadzenCard Style="height:100%">
+                    <h4 style="margin:0 0 1rem">Property Performance</h4>
+                    @if (isLoadingCharts)
+                    {
+                        <RadzenProgressBar Value="100" ShowValue="false"
+                                           Mode="ProgressBarMode.Indeterminate" />
+                    }
+                    else if (propertyStats?.Any() == true)
+                    {
+                        <RadzenDataGrid Data="@propertyStats"
+                                        TItem="PropertyStatsDto"
+                                        AllowPaging="false"
+                                        Density="Density.Compact"
+                                        Style="max-height:220px">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="PropertyStatsDto"
+                                                      Property="Address"
+                                                      Title="Property"
+                                                      Width="180px" />
+                                <RadzenDataGridColumn TItem="PropertyStatsDto"
+                                                      Property="OccupancyRate"
+                                                      Title="Occupancy"
+                                                      Width="100px">
+                                    <Template Context="p">
+                                        <RadzenProgressBar Value="@((double)p.OccupancyRate)"
+                                                           ShowValue="true"
+                                                           ProgressBarStyle="@GetOccupancyStyle(p.OccupancyRate)"
+                                                           Style="height:8px" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="PropertyStatsDto"
+                                                      Property="MonthlyRevenue"
+                                                      Title="Monthly Rev."
+                                                      Width="110px"
+                                                      FormatString="{0:C0}" />
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                    else
+                    {
+                        <EmptyState Message="No properties found" Icon="home_work" />
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+
+        </RadzenRow>
+    </AuthorizeView>
+
+
+    <RadzenCard>
+        <h4 style="margin:0 0 1rem">Quick Actions</h4>
+        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" Gap="0.75rem">
+
+            <AuthorizeView Roles="Admin,Owner">
+                <RadzenButton Text="Add Property" Icon="add_home" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/properties/new"))" />
+                <RadzenButton Text="Add Unit" Icon="add_business" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/units/new"))" />
+                <RadzenButton Text="New Lease" Icon="note_add" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/leases/new"))" />
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Tenant">
+                <RadzenButton Text="Submit Maintenance" Icon="build_circle" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/maintenance/new"))" />
+            </AuthorizeView>
+
+            <RadzenButton Text="Record Payment" Icon="add_card" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/payments"))" />
+            <RadzenButton Text="Open Chat" Icon="chat" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/chat"))" />
+
+            <AuthorizeView Roles="Admin">
+                <RadzenButton Text="View Audit Logs" Icon="fact_check" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/audit"))" />
+            </AuthorizeView>
+
+        </RadzenStack>
+    </RadzenCard>
+
+    <AuthorizeView Roles="Admin">
+        @if (systemAnalytics is not null)
+        {
+            <RadzenCard>
+                <RadzenStack Orientation="Orientation.Horizontal"
+                             AlignItems="AlignItems.Center"
+                             Style="margin-bottom:1rem">
+                    <RadzenIcon Icon="analytics" Style="color:var(--rz-primary)" />
+                    <h4 style="margin:0 0.5rem">System Analytics</h4>
+                    <span style="font-size:0.75rem;color:var(--rz-text-secondary-color)">
+                        Last updated @systemAnalytics.LastUpdated.ToLocalTime().ToString("HH:mm")
+                    </span>
+                </RadzenStack>
+                <RadzenRow Gap="1rem">
+                    <RadzenColumn SizeXS="6" SizeSM="3">
+                        <div class="analytics-item">
+                            <span class="analytics-value">@systemAnalytics.TotalUsers</span>
+                            <span class="analytics-label">Total Users</span>
+                        </div>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="6" SizeSM="3">
+                        <div class="analytics-item">
+                            <span class="analytics-value">@systemAnalytics.NewUsersThisMonth</span>
+                            <span class="analytics-label">New This Month</span>
+                        </div>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="6" SizeSM="3">
+                        <div class="analytics-item">
+                            <span class="analytics-value">@systemAnalytics.AverageOccupancyRate.ToString("F1")%</span>
+                            <span class="analytics-label">Avg Occupancy</span>
+                        </div>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="6" SizeSM="3">
+                        <div class="analytics-item">
+                            <span class="analytics-value">@systemAnalytics.AverageMaintenanceResolutionDays.ToString("F1")d</span>
+                            <span class="analytics-label">Avg Maint. Resolution</span>
+                        </div>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        }
+    </AuthorizeView>
+
+</RadzenStack>

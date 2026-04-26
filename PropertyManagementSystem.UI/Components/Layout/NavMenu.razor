@@ -1,15 +1,41 @@
-﻿<div class="nav-scrollable">
-    <nav class="flex-column">
-        <RadzenPanelMenu Multiple=false>
+﻿@using Microsoft.AspNetCore.Components.Authorization
 
-            <RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
+<div class="nav-scrollable">
+    <nav class="flex-column">
+
+        <RadzenPanelMenu Multiple="false">
+
+            <RadzenPanelMenuItem Text="Dashboard" Path="/dashboard" Icon="dashboard" />
+
+            <RadzenPanelMenuItem Text="Account" Icon="account_circle">
+
+                <AuthorizeView>
+                    <Authorized>
+                        <RadzenPanelMenuItem Text="Logout" Icon="logout" Click="@Logout" />
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <RadzenPanelMenuItem Text="Login" Icon="login" Path="/login" />
+                    </NotAuthorized>
+                </AuthorizeView>
+
+            </RadzenPanelMenuItem>
 
         </RadzenPanelMenu>
+
     </nav>
 </div>
 
-@code
-{
-    [Inject]
+@code {
+    [Inject] 
+    private AuthStateService AuthStateService { get; set; } = null!;
+
+    [Inject] 
     private NavigationManager Navigation { get; set; } = null!;
+
+    private async Task Logout()
+    {
+        await AuthStateService.LogoutAsync();
+        Navigation.NavigateTo("/login", true);
+    }
 }

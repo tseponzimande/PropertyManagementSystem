@@ -410,6 +410,18 @@ namespace PropertyManagementSystem.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            CreatedAt = new DateTime(2024, 1, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@pms.com",
+                            IsActive = true,
+                            Name = "System Admin",
+                            PasswordHash = "$2a$11$5RkQ6G8T7hJjP5M1R4hB9uS1A2nC3dE4fG5hI6jK7lM8nO9pQ0rS2",
+                            RoleId = new Guid("11111111-1111-1111-1111-111111111111")
+                        });
                 });
 
             modelBuilder.Entity("PropertyManagementSystem.Domain.Entities.AuditLog", b =>
