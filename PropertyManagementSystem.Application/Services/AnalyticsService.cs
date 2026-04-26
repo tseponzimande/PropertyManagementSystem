@@ -123,7 +123,7 @@
             }
         }
 
-        public async Task<PaymentTrendsDto> GetPaymentTrendsAsync(int months = 12)
+        public async Task<PaymentTrendsDto> GetPaymentTrendsAsync(int months = 12, Guid? ownerId = null)
         {
             try
             {
@@ -131,6 +131,13 @@
                 var completedPayments = payments
                     .Where(p => p.Status == PaymentEnum.Completed.ToString())
                     .ToList();
+
+                if (ownerId.HasValue)
+                {
+                    completedPayments = completedPayments
+                        .Where(p => p.Lease?.Unit?.Property?.OwnerId == ownerId.Value)
+                        .ToList();
+                }
 
                 var cutoffDate = DateTime.UtcNow.AddMonths(-months);
                 var recentPayments = completedPayments
