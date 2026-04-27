@@ -12,8 +12,8 @@ using PropertyManagementSystem.Infrastructure.Data;
 namespace PropertyManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(PropertyManagementDbContext))]
-    [Migration("20260420190049_removalOfSignalR")]
-    partial class removalOfSignalR
+    [Migration("20260425182908_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,0 +1,113 @@
+﻿@page "/leases"
+
+<PageTitle>Lease list</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+
+    <PageHeader Title="Leases" Icon="description" Subtitle="@subtitle">
+        <Actions>
+            <AuthorizeView Roles="Admin,Owner">
+                <RadzenButton Text="New Lease" Icon="note_add"
+                              ButtonStyle="ButtonStyle.Primary" Click="@OpenAdd" />
+            </AuthorizeView>
+        </Actions>
+    </PageHeader>
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".5rem" Wrap="FlexWrap.Wrap">
+        <RadzenLabel Text="Status:" Style="font-weight:600" />
+        <RadzenSelectBar @bind-Value="statusFilter" TValue="string" Change="@ApplyFilter">
+            <Items>
+                <RadzenSelectBarItem Text="All" Value="@("")" />
+                <RadzenSelectBarItem Text="Active" Value="@("Active")" />
+                <RadzenSelectBarItem Text="Expired" Value="@("Expired")" />
+                <RadzenSelectBarItem Text="Terminated" Value="@("Terminated")" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@rows"
+                        TItem="LeaseDto"
+                        IsLoading="@loading"
+                        AllowSorting="true"
+                        AllowPaging="true"
+                        PageSize="15"
+                        AllowColumnResize="true"
+                        EmptyText="No leases found.">
+            <Columns>
+
+                <RadzenDataGridColumn TItem="LeaseDto" Property="UnitId" Title="Unit" Width="140px">
+                    <Template Context="l">
+                        @(units.FirstOrDefault(u => u.Id == l.UnitId)?.UnitNumber ?? "—")
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <AuthorizeView Roles="Admin,Owner">
+                    <RadzenDataGridColumn TItem="LeaseDto" Property="TenantId" Title="Tenant" Width="160px">
+                        <Template Context="l">
+                            @(users.FirstOrDefault(u => u.Id == l.TenantId)?.Name ?? "—")
+                        </Template>
+                    </RadzenDataGridColumn>
+                </AuthorizeView>
+
+                <RadzenDataGridColumn TItem="LeaseDto" Property="RentAmount" Title="Rent / mo" Width="130px" FormatString="{0:C0}" />
+                <RadzenDataGridColumn TItem="LeaseDto" Property="StartDate" Title="Start" Width="120px" FormatString="{0:yyyy-MM-dd}" />
+
+                <RadzenDataGridColumn TItem="LeaseDto" Property="EndDate" Title="Expires" Width="150px">
+                    <Template Context="l">
+                        <span class="@ExpiryClass(l.EndDate)">
+                            @l.EndDate.ToString("yyyy-MM-dd")
+                            @* @if (l.Status == "Active") *@
+                            @if (l.Status == LeaseEnum.Active.ToString())
+                            {
+                                var days = (l.EndDate - DateTime.UtcNow).Days;
+                                <span style="font-size:.72rem;margin-left:.35rem">
+                                    (@(days > 0 ? $"{days}d" : "expired"))
+                                </span>
+                            }
+                        </span>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="LeaseDto" Property="Status" Title="Status" Width="120px">
+                    <Template Context="l"><StatusBadge Status="@l.Status" /></Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="LeaseDto" Title="Actions" Width="160px"
+                                      Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+                    <Template Context="l">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap=".25rem" JustifyContent="JustifyContent.Center">
+                            <RadzenButton Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                          Tooltip="View" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => NavigationManager.NavigateTo($"/lease/{l.Id}"))" />
+                            @* <RadzenButton Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                          Tooltip="View" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => NavigationManager.NavigateTo($"/leases/{l.Id}"))" /> *@
+                            <AuthorizeView Roles="Admin,Owner">
+                                <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info"
+                                              Tooltip="Edit" TooltipPosition="TooltipPosition.Top"
+                                              Click="@(() => OpenEdit(l))" />
+                                @* @if (l.Status == "Active") *@
+                                @if (l.Status == LeaseEnum.Active.ToString())
+                                {
+                                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Warning"
+                                                  Tooltip="Terminate" TooltipPosition="TooltipPosition.Top"
+                                                  Click="@(() => ConfirmTerminate(l))" />
+                                }
+                                <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger"
+                                              Tooltip="Delete" TooltipPosition="TooltipPosition.Top"
+                                              Click="@(() => ConfirmDelete(l))" />
+                            </AuthorizeView>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</RadzenStack>

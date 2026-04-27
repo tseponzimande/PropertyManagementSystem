@@ -13,6 +13,14 @@
                 var units = await _unitOfWork.Units.GetAllAsync();
                 var leases = await _unitOfWork.Leases.GetAllAsync();
                 var users = await _unitOfWork.Users.GetAllAsync();
+                var roles = await _unitOfWork.Roles.GetAllAsync();
+
+                var tenantRoleId = roles
+                    .FirstOrDefault(r => r.RoleType == RoleType.Tenant.ToString())?.Id;
+
+                var ownerRoleId = roles
+                    .FirstOrDefault(r => r.RoleType == RoleType.Owner.ToString())?.Id;
+
                 var maintenanceRequests = await _unitOfWork.MaintenanceRequests.GetAllAsync();
                 var payments = await _unitOfWork.Payments.GetAllAsync();
                 var messages = await _unitOfWork.Messages.GetAllAsync();
@@ -30,9 +38,13 @@
                     OccupiedUnits = units.Count(u => u.Status == UnitEnum.Occupied.ToString()),
                     TotalLeases = leases.Count(),
                     ActiveLeases = leases.Count(l => l.Status == LeaseEnum.Active.ToString()),
-                    ExpiredLeases = leases.Count(l => l.Status == LeaseEnum.Expired.ToString()),
-                    TotalTenants = users.Count(u => u.Role.RoleType == RoleType.Tenant.ToString()),
-                    TotalOwners = users.Count(u => u.Role.RoleType == RoleType.Owner.ToString()),
+                    ExpiredLeases = leases.Count(l => l.Status == LeaseEnum.Expired.ToString()),             
+
+                    TotalTenants = tenantRoleId.HasValue ? users.Count(u => u.RoleId == tenantRoleId.Value) : 0,
+
+                    TotalOwners = ownerRoleId.HasValue ? users.Count(u => u.RoleId == ownerRoleId.Value) : 0,
+
+
                     PendingMaintenanceRequests = maintenanceRequests.Count(m => m.Status == MaintenanceRequestEnum.Open.ToString()),
                     InProgressMaintenanceRequests = maintenanceRequests.Count(m => m.Status == MaintenanceRequestEnum.InProgress.ToString()),
                     ResolvedMaintenanceRequests = maintenanceRequests.Count(m => m.Status == MaintenanceRequestEnum.Resolved.ToString()),

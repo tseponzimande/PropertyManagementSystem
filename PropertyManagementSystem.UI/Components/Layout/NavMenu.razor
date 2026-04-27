@@ -1,15 +1,73 @@
-﻿<div class="nav-scrollable">
-    <nav class="flex-column">
-        <RadzenPanelMenu Multiple=false>
+﻿@using Microsoft.AspNetCore.Components.Authorization
 
-            <RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
+<div class="nav-scrollable">
+    <nav class="flex-column">
+
+        <RadzenPanelMenu Multiple="false">
+
+            <RadzenPanelMenuItem Text="Dashboard" Path="/dashboard" Icon="dashboard" />
+
+            <AuthorizeView Roles="Admin,Owner">
+                <RadzenPanelMenuItem Text="Property" Icon="apartment">
+                    <RadzenPanelMenuItem Text="Properties" Icon="home_work" Path="/properties" />
+                    <RadzenPanelMenuItem Text="Units" Icon="meeting_room" Path="/units" />
+                    <RadzenPanelMenuItem Text="Leases" Icon="description" Path="/leases" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Tenant">
+                <RadzenPanelMenuItem Text="Tenancy" Icon="contract_edit">
+                    <RadzenPanelMenuItem Text="My Lease" Icon="description" Path="/leases" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <AuthorizeView>
+                <RadzenPanelMenuItem Text="Finance Operations" Icon="finance">
+                    <RadzenPanelMenuItem Text="Payments" Icon="payments" Path="/payments" />
+                    <RadzenPanelMenuItem Text="Maintenance" Icon="build" Path="/maintenance" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <AuthorizeView>
+                <RadzenPanelMenuItem Text="Communication" Icon="chat">
+                    <RadzenPanelMenuItem Text="Chat" Icon="chat" Path="/chat" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Admin,Owner">
+                <RadzenPanelMenuItem Text="Reports" Icon="area_chart">
+                    <RadzenPanelMenuItem Text="Reports" Icon="bar_chart" Path="/reports" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Admin">
+                <RadzenPanelMenuItem Text="Administration" Icon="admin_panel_settings">
+                    <RadzenPanelMenuItem Text="Users" Icon="people" Path="/users" />
+                    <RadzenPanelMenuItem Text="Audit Logs" Icon="fact_check" Path="/audit" />
+                    <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="/settings" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <AuthorizeView>
+                <RadzenPanelMenuItem Text="My Profile" Icon="person">
+                    <RadzenPanelMenuItem Text="Profile Info" Icon="manage_accounts" Path="/profile" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+
+            <RadzenPanelMenuItem Text="Account" Icon="account_circle">
+                <AuthorizeView>
+                    <Authorized>
+                        <RadzenPanelMenuItem Text="Logout" Icon="logout" Click="@Logout" />
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <RadzenPanelMenuItem Text="Login" Icon="login" Path="/login" />
+                    </NotAuthorized>
+                </AuthorizeView>
+
+            </RadzenPanelMenuItem>
 
         </RadzenPanelMenu>
+
     </nav>
 </div>
-
-@code
-{
-    [Inject]
-    private NavigationManager Navigation { get; set; } = null!;
-}

@@ -1,0 +1,83 @@
+﻿@using Radzen.Blazor
+
+<RadzenTemplateForm TItem="LeaseDto" Data="@Model" Submit="@Save">
+    <RadzenStack Gap="1rem">
+
+        <RadzenFormField Text="Unit" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@Model.UnitId" Name="UnitId"
+                                Data="@Units" ValueProperty="Id"
+                                TextProperty="UnitNumber"
+                                Style="width:100%" Placeholder="Select unit" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="UnitId" Text="Unit is required" /></Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Tenant" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@Model.TenantId" Name="TenantId"
+                                Data="@tenants" ValueProperty="Id"
+                                TextProperty="Name"
+                                Style="width:100%" Placeholder="Select tenant" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="TenantId" Text="Tenant is required" /></Helper>
+        </RadzenFormField>
+
+        <RadzenRow Gap="1rem">
+            <RadzenColumn SizeXS="12" SizeSM="6">
+                <RadzenFormField Text="Start Date" Variant="Variant.Outlined" Style="width:100%">
+                    <ChildContent>
+                        <RadzenDatePicker @bind-Value="@Model.StartDate" Name="StartDate"
+                                          DateFormat="yyyy-MM-dd" Style="width:100%" />
+                    </ChildContent>
+                    <Helper><RadzenRequiredValidator Component="StartDate" Text="Start date required" /></Helper>
+                </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn SizeXS="12" SizeSM="6">
+                <RadzenFormField Text="End Date" Variant="Variant.Outlined" Style="width:100%">
+                    <ChildContent>
+                        <RadzenDatePicker @bind-Value="@Model.EndDate" Name="EndDate"
+                                          DateFormat="yyyy-MM-dd" Style="width:100%" />
+                    </ChildContent>
+                    <Helper><RadzenRequiredValidator Component="EndDate" Text="End date required" /></Helper>
+                </RadzenFormField>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenFormField Text="Monthly Rent (R)" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenNumeric @bind-Value="@Model.RentAmount" Name="RentAmount"
+                               Min="0" Step="100" Style="width:100%" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="RentAmount" Text="Rent amount required" /></Helper>
+        </RadzenFormField>
+
+        @if (IsEdit)
+        {
+            <RadzenFormField Text="Status" Variant="Variant.Outlined" Style="width:100%">
+                <ChildContent>
+                    <RadzenDropDown @bind-Value="@Model.Status" Name="Status"
+                                    Data="@_statuses" Style="width:100%" />
+                </ChildContent>
+            </RadzenFormField>
+        }
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                         Size="AlertSize.Small" AllowClose="false">@error</RadzenAlert>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Variant="Variant.Outlined"
+                          Click="@(() => DialogService.Close(false))" />
+
+            <RadzenButton ButtonType="ButtonType.Submit"
+                          Text="@(IsEdit ? "Save Changes" : "Create Lease")"
+                          Icon="@(IsEdit ? "save" : "note_add")"
+                          ButtonStyle="ButtonStyle.Primary"
+                          IsBusy="@busy" BusyText="Saving..." />
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenTemplateForm>

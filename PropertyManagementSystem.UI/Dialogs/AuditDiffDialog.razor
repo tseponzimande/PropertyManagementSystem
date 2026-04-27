@@ -1,0 +1,65 @@
+﻿@using Radzen.Blazor
+
+<RadzenStack Gap="1.5rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem">
+        <RadzenIcon Icon="history" Style="font-size:1.6rem" />
+
+        <RadzenStack Gap="0.25rem">
+            <RadzenText TextStyle="TextStyle.Subtitle1">
+                @Log.Action — @Log.EntityName
+            </RadzenText>
+
+            <RadzenText TextStyle="TextStyle.Caption" class="rz-text-secondary">
+                @Log.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss UTC") · @Log.UserName
+            </RadzenText>
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenRow Gap="1rem">
+
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenFieldset Text="Before" Style="--rz-fieldset-border-color: var(--rz-danger)">
+                @if (string.IsNullOrWhiteSpace(Log.OldValue))
+                {
+                    <RadzenText TextStyle="TextStyle.Body2" class="rz-text-secondary">
+                        No previous value
+                    </RadzenText>
+                }
+                else
+                {
+                    <RadzenCard Variant="Variant.Outlined" class="rz-p-2 rz-mt-1">
+                        <RadzenText TextStyle="TextStyle.Body2" Style="white-space: pre-wrap; font-family: monospace;">
+                            @PrettyJson(Log.OldValue)
+                        </RadzenText>
+                    </RadzenCard>
+                }
+            </RadzenFieldset>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenFieldset Text="After" Style="--rz-fieldset-border-color: var(--rz-success)">
+                @if (string.IsNullOrWhiteSpace(Log.NewValue))
+                {
+                    <RadzenText TextStyle="TextStyle.Body2" class="rz-text-secondary">
+                        No new value
+                    </RadzenText>
+                }
+                else
+                {
+                    <RadzenCard Variant="Variant.Outlined" class="rz-p-2 rz-mt-1">
+                        <RadzenText TextStyle="TextStyle.Body2" Style="white-space: pre-wrap; font-family: monospace;">
+                            @PrettyJson(Log.NewValue)
+                        </RadzenText>
+                    </RadzenCard>
+                }
+            </RadzenFieldset>
+        </RadzenColumn>
+
+    </RadzenRow>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Text="Close" ButtonStyle="ButtonStyle.Light" Click="@(() => DialogService.Close())" />
+    </RadzenStack>
+
+</RadzenStack>
