@@ -1,0 +1,31 @@
+﻿@using Radzen.Blazor
+
+<RadzenTemplateForm TItem="PaymentDto" Data="@Model" Submit="@Save">
+    <RadzenStack Gap="1rem">
+
+        <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" AllowClose="false" Size="AlertSize.Small">
+            Payment status is automatically set to <strong>Completed</strong>.
+        </RadzenAlert>
+
+        <RadzenFormField Text="Amount (R)" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenNumeric @bind-Value="@Model.Amount" Name="Amount" Min="1" Step="100" Style="width:100%" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="Amount" Text="Amount is required" /></Helper>
+        </RadzenFormField>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Size="AlertSize.Small" AllowClose="false">@error</RadzenAlert>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Variant="Variant.Outlined" Click="@(() => DialogService.Close(false))" />
+
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Record Payment" Icon="payments" ButtonStyle="ButtonStyle.Primary" IsBusy="@busy" BusyText="Saving..." />
+
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenTemplateForm>

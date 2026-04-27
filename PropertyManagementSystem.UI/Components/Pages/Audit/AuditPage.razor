@@ -1,0 +1,110 @@
+﻿@page "/audit"
+@using PropertyManagementSystem.Application.DTOs.AuditLog
+
+<PageTitle>Audit Logs — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+    <PageHeader Title="Audit Logs" Icon="manage_search" Subtitle="Full system activity trail — Admin only" />
+
+    <RadzenCard>
+        <RadzenRow Gap="1rem" AlignItems="AlignItems.End">
+            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                <RadzenFormField Text="Filter mode" Variant="Variant.Outlined" Style="width:100%">
+                    <RadzenDropDown @bind-Value="mode" Data="@modes" Style="width:100%"
+                                    Change="@(_ => logs = null)" />
+                </RadzenFormField>
+            </RadzenColumn>
+
+            @if (mode == "User")
+            {
+                <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                    <RadzenFormField Text="User" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenDropDown @bind-Value="selectedUserId" Data="@users"
+                                        ValueProperty="Id" TextProperty="Name"
+                                        Style="width:100%" Placeholder="Select user" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            }
+            else if (mode == "Action")
+            {
+                <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                    <RadzenFormField Text="Action" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenTextBox @bind-Value="actionFilter" Placeholder="e.g. Create, Update, Delete" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            }
+            else if (mode == "Entity")
+            {
+                <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="2">
+                    <RadzenFormField Text="Entity" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenDropDown @bind-Value="entityName" Data="@entityNames" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+                    <RadzenFormField Text="Entity ID (GUID)" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenTextBox @bind-Value="entityIdStr" Placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            }
+            else if (mode == "DateRange")
+            {
+                <RadzenColumn SizeXS="12" SizeSM="4" SizeLG="2">
+                    <RadzenFormField Text="From" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenDatePicker @bind-Value="dateRangeStart" DateFormat="yyyy-MM-dd" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeXS="12" SizeSM="4" SizeLG="2">
+                    <RadzenFormField Text="To" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenDatePicker @bind-Value="dateRangeEnd" DateFormat="yyyy-MM-dd" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            }
+
+            <RadzenColumn SizeXS="12" SizeSM="12" SizeLG="2">
+                <RadzenButton Text="Search" Icon="search" ButtonStyle="ButtonStyle.Primary"
+                              Style="width:100%" Click="@Search" IsBusy="@IsLoading" />
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                     Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    @if (logs is not null)
+    {
+        <RadzenCard>
+            <p style="margin:0 0 .75rem;font-size:.85rem;color:var(--rz-text-secondary-color)">
+                @logs.Count result@(logs.Count != 1 ? "s" : "") found
+            </p>
+            <RadzenDataGrid Data="@logs" TItem="AuditLogDto" IsLoading="@IsLoading"
+                            AllowSorting="true" AllowPaging="true" PageSize="20"
+                            AllowFiltering="true" FilterMode="FilterMode.SimpleWithMenu"
+                            AllowColumnResize="true" EmptyText="No audit logs found.">
+                <Columns>
+                    <RadzenDataGridColumn TItem="AuditLogDto" Property="CreatedAt" Title="Timestamp" Width="165px" FormatString="{0:yyyy-MM-dd HH:mm:ss}" />
+                    <RadzenDataGridColumn TItem="AuditLogDto" Property="Action" Title="Action" Width="120px" />
+                    <RadzenDataGridColumn TItem="AuditLogDto" Property="EntityName" Title="Entity" Width="130px" />
+                    <RadzenDataGridColumn TItem="AuditLogDto" Property="UserName" Title="User" Width="160px" />
+                    <RadzenDataGridColumn TItem="AuditLogDto" Property="IpAddress" Title="IP Address" Width="140px" />
+                    <RadzenDataGridColumn TItem="AuditLogDto" Title="Changes" Width="100px"
+                                          Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+                        <Template Context="log">
+                            @if (!string.IsNullOrEmpty(log.OldValue) || !string.IsNullOrEmpty(log.NewValue))
+                            {
+                                <RadzenButton Text="Diff" Icon="compare_arrows" Size="ButtonSize.Small"
+                                              ButtonStyle="ButtonStyle.Light" Click="@(() => ShowDiff(log))" />
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenCard>
+    }
+    else if (!IsLoading)
+    {
+        <EmptyState Message="Use the filters above and click Search to load audit logs." Icon="manage_search" />
+    }
+</RadzenStack>

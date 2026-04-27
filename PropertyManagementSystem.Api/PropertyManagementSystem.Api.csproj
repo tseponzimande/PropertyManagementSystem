@@ -23,7 +23,6 @@
   <ItemGroup>
     <ProjectReference Include="..\PropertyManagementSystem.Application\PropertyManagementSystem.Application.csproj" />
     <ProjectReference Include="..\PropertyManagementSystem.Infrastructure\PropertyManagementSystem.Infrastructure.csproj" />
-    <ProjectReference Include="..\PropertyManagementSystem.Shared\PropertyManagementSystem.Shared.csproj" />
   </ItemGroup>
 
 </Project>

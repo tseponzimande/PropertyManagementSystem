@@ -215,7 +215,10 @@
             <AuthorizeView Roles="Admin,Owner">
                 <RadzenButton Text="Add Property" Icon="add_home" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/properties/new"))" />
                 <RadzenButton Text="Add Unit" Icon="add_business" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/units/new"))" />
-                <RadzenButton Text="New Lease" Icon="note_add" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/leases/new"))" />
+                <RadzenButton Text="New Lease"
+                              Icon="note_add"
+                              Click="@OpenNewLeaseDialog" />
+                
             </AuthorizeView>
 
             <AuthorizeView Roles="Tenant">

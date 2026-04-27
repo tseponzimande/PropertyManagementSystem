@@ -1,0 +1,115 @@
+﻿@page "/profile"
+
+<PageTitle>My Profile — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem" Style="max-width:1200px; margin:0 auto;">
+
+    <RadzenLabel Title="My Profile" Icon="manage_accounts" Subtitle="Update your personal information" />
+
+    @if (loading)
+    {
+        <div style="display:flex;align-items:center;justify-content:center;height:20vh">
+            <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        </div>
+    }
+    else
+    {
+        <RadzenCard>
+            <h4 style="margin:0 0 1.25rem">Personal Information</h4>
+            <RadzenTemplateForm TItem="UserDto" Data="@user" Submit="@SaveProfile">
+                <RadzenStack Gap="1rem">
+
+                    <RadzenFormField Text="Full Name" Variant="Variant.Outlined" Style="width:100%">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@user.Name" Name="Name" Style="width:100%" />
+                        </ChildContent>
+                        <Helper><RadzenRequiredValidator Component="Name" Text="Name is required" /></Helper>
+                    </RadzenFormField>
+
+                    <RadzenFormField Text="Email Address" Variant="Variant.Outlined" Style="width:100%">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@user.Email" Name="Email" Style="width:100%" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Email" Text="Email is required" />
+                            <RadzenEmailValidator Component="Email" Text="Enter a valid email" />
+                        </Helper>
+                    </RadzenFormField>
+
+                    <RadzenFormField Text="Role" Variant="Variant.Outlined" Style="width:100%">
+                        <ChildContent>
+                            <RadzenTextBox Value="@user.Role" Disabled="true" Style="width:100%" />
+                        </ChildContent>
+                    </RadzenFormField>
+
+                    @if (!string.IsNullOrEmpty(profileError))
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                                     Size="AlertSize.Small" AllowClose="false">@profileError</RadzenAlert>
+                    }
+
+                    <RadzenButton ButtonType="ButtonType.Submit"
+                                  Text="Save Profile" Icon="save"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Style="align-self:flex-start"
+                                  IsBusy="@savingProfile" BusyText="Saving..." />
+
+                </RadzenStack>
+            </RadzenTemplateForm>
+        </RadzenCard>
+
+        <hr />
+
+        <RadzenCard>
+            <h4 style="margin:0 0 1.25rem">Change Password</h4>
+
+            <RadzenTemplateForm TItem="ChangePasswordRequestDto" Data="@pwdModel" Submit="@SavePassword">
+                <RadzenStack Gap="1rem">
+
+                    <RadzenFormField Text="Current Password" Variant="Variant.Outlined" Style="width:100%">
+                        <ChildContent>
+                            <RadzenPassword @bind-Value="@pwdModel.OldPassword" Name="OldPassword" Style="width:100%" />
+                        </ChildContent>
+                        <Helper><RadzenRequiredValidator Component="OldPassword" Text="Current password required" /></Helper>
+                    </RadzenFormField>
+
+                    <RadzenFormField Text="New Password" Variant="Variant.Outlined" Style="width:100%">
+                        <ChildContent>
+                            <RadzenPassword @bind-Value="@pwdModel.NewPassword" Name="NewPassword" Style="width:100%" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="NewPassword" Text="New password required" />
+                            <RadzenLengthValidator Component="NewPassword" Min="8" Text="Minimum 8 characters" />
+                        </Helper>
+                    </RadzenFormField>
+
+                    <RadzenFormField Text="Confirm New Password" Variant="Variant.Outlined" Style="width:100%">
+                        <ChildContent>
+                            <RadzenPassword @bind-Value="@pwdModel.ConfirmPassword" Name="ConfirmPwd" Style="width:100%" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="ConfirmPwd" Text="Please confirm password" />
+                            <RadzenCompareValidator Component="ConfirmPwd"
+                                                    Value="@pwdModel.NewPassword"
+                                                    Text="Passwords do not match" />                          
+                        </Helper>
+                    </RadzenFormField>
+
+                    @if (!string.IsNullOrEmpty(PasswdError))
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                                     Size="AlertSize.Small" AllowClose="false">@PasswdError</RadzenAlert>
+                    }
+
+                    <RadzenButton ButtonType="ButtonType.Submit"
+                                  Text="Change Password" Icon="lock_reset"
+                                  ButtonStyle="ButtonStyle.Secondary"
+                                  Style="align-self:flex-start"
+                                  IsBusy="@Passwd" BusyText="Updating..." />
+
+                </RadzenStack>
+            </RadzenTemplateForm>
+        </RadzenCard>
+    }
+
+</RadzenStack>

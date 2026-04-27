@@ -1,0 +1,31 @@
+﻿@using Radzen.Blazor
+
+<RadzenStack Gap="1.5rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+        <RadzenIcon Icon="@Icon" Style="@($"font-size:2.5rem;color:var(--rz-{IconColor})")" />
+
+        <RadzenStack Gap="2px">
+            <RadzenText Text="@Message" Style="font-weight:500; font-size:1rem;" />
+
+            @if (!string.IsNullOrEmpty(SubMessage))
+            {
+                <RadzenText Text="@SubMessage"
+                            Style="font-size:0.82rem; color:var(--rz-text-secondary-color);" />
+            }
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+        <RadzenButton Text="Cancel"
+                      ButtonStyle="ButtonStyle.Light"
+                      Variant="Variant.Outlined"
+                      Click="@(() => DialogService.Close(false))" />
+
+        <RadzenButton Text="@ConfirmText"
+                      Icon="@ConfirmIcon"
+                      ButtonStyle="@ConfirmStyle"
+                      Click="@(() => DialogService.Close(true))" />
+    </RadzenStack>
+
+</RadzenStack>
