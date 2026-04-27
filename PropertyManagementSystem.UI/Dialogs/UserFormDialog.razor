@@ -1,0 +1,62 @@
+﻿@using Radzen.Blazor
+
+<RadzenTemplateForm TItem="UserDto" Data="@Model" Submit="@Save">
+    <RadzenStack Gap="1rem">
+
+        <RadzenFormField Text="Full Name" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@Model.Name" Name="Name" Placeholder="Jane Smith" Style="width:100%" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Name" Text="Name is required" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Email Address" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@Model.Email" Name="Email" Placeholder="jane@example.com" Style="width:100%" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Email" Text="Email is required" />
+                <RadzenEmailValidator Component="Email" Text="Enter a valid email" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Role" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@Model.Role" Name="Role" Data="@roles" Style="width:100%" Placeholder="Select role" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="Role" Text="Role is required" /></Helper>
+        </RadzenFormField>
+
+        @if (!IsEdit)
+        {
+            <RadzenFormField Text="Password" Variant="Variant.Outlined" Style="width:100%">
+                <ChildContent>
+                    <RadzenPassword @bind-Value="@password" Name="Password" Placeholder="Min. 8 characters" Style="width:100%" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Password" Text="Password is required" />
+                    <RadzenLengthValidator Component="Password" Min="8" Text="Minimum 8 characters" />
+                </Helper>
+            </RadzenFormField>
+        }
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Size="AlertSize.Small" AllowClose="false">@error</RadzenAlert>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Variant="Variant.Outlined" Click="@(() => DialogService.Close(false))" />
+
+            <RadzenButton ButtonType="ButtonType.Submit"
+                          Text="@(IsEdit ? "Save Changes" : "Create User")"
+                          Icon="@(IsEdit ? "save" : "person_add")"
+                          ButtonStyle="ButtonStyle.Primary"
+                          IsBusy="@busy" BusyText="Saving..." />
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenTemplateForm>

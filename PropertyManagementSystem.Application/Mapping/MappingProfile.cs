@@ -4,7 +4,12 @@
     {
         public MappingProfile()
         {
-            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Role,
+                opt => opt.MapFrom(src => src.Role.RoleType))
+            .ReverseMap()
+            .ForMember(dest => dest.Role,
+                opt => opt.Ignore());
 
             CreateMap<Property, PropertyDto>().ReverseMap();
 

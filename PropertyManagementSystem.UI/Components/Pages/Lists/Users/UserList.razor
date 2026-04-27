@@ -1,0 +1,82 @@
+﻿@page "/users"
+@using PropertyManagementSystem.UI.Constants
+
+<PageTitle>Users — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Style="margin-bottom:1rem;">
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+
+            <RadzenIcon Icon="people" />
+            <div>
+                <RadzenText TextStyle="TextStyle.H5">User Management</RadzenText>
+                <RadzenText TextStyle="TextStyle.Caption">Manage all system users — Admin only</RadzenText>
+            </div>
+        </RadzenStack>
+
+        <RadzenButton Text="Add User" Icon="person_add" ButtonStyle="ButtonStyle.Primary" Click="@OpenAdd" />
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".5rem" Wrap="FlexWrap.Wrap">
+        <RadzenLabel Text="Role:" Style="font-weight:600" />
+        <RadzenSelectBar @bind-Value="roleFilter" TValue="string" Change="@ApplyFilter">
+            <Items>
+                <RadzenSelectBarItem Text="All"  Value="@("")" />
+                <RadzenSelectBarItem Text="Admin"  Value="@("Admin")" />
+                <RadzenSelectBarItem Text="Owner"  Value="@("Owner")" />
+                <RadzenSelectBarItem Text="Tenant" Value="@("Tenant")" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@rows"
+                        TItem="UserDto"
+                        IsLoading="@loading"
+                        AllowSorting="true"
+                        AllowPaging="true"
+                        PageSize="5"
+                        AllowFiltering="true"
+                        FilterMode="FilterMode.SimpleWithMenu"
+                        AllowColumnResize="true"
+                        EmptyText="No users found.">
+            <Columns>
+                <RadzenDataGridColumn TItem="UserDto" Property="Name"  Title="Name"  MinWidth="160px" />
+				
+                <RadzenDataGridColumn TItem="UserDto" Property="Email" Title="Email" MinWidth="200px" />
+				
+                <RadzenDataGridColumn TItem="UserDto" Property="Role"  Title="Role"  Width="130px">
+				
+                    <Template Context="u">
+                        <RadzenBadge Text="@u.Role" BadgeStyle="@(u.Role == RolesEnum.Admin.ToString() ? BadgeStyle.Danger : u.Role == RolesEnum.Owner.ToString() ? BadgeStyle.Info : BadgeStyle.Success)" Variant="Variant.Flat" />
+                    </Template>
+                </RadzenDataGridColumn>
+				
+                <RadzenDataGridColumn TItem="UserDto" Title="Actions" Width="120px" Filterable="false" 
+                    Sortable="false" TextAlign="TextAlign.Center">
+                    <Template Context="u">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap=".25rem" JustifyContent="JustifyContent.Center">
+						
+                            <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info"
+                                          Tooltip="Edit" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => OpenEdit(u))" />
+										  
+                            <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger"
+                                          Tooltip="Delete" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => ConfirmDelete(u))" />
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+				
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+</RadzenStack>

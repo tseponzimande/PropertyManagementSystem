@@ -22,6 +22,9 @@
         [Inject]
         private AuthenticationStateProvider AuthProvider { get; set; } = null!;
 
+        [Inject]
+        private DialogService DialogService { get; set; } = null!;
+
         #endregion
 
         #region Fields 
@@ -124,6 +127,31 @@
             rate >= 80 ? ProgressBarStyle.Success :
             rate >= 50 ? ProgressBarStyle.Warning :
             ProgressBarStyle.Danger;
+
+
+        private async Task OpenNewLeaseDialog()
+        {
+            try
+            {
+                await DialogService.OpenAsync<LeaseFormDialog>(
+                    "New Lease",
+                    new Dictionary<string, object>
+                    {
+                        ["Model"] = new LeaseDto(),
+                        ["IsEdit"] = false,
+                        ["Units"] = new List<UnitDto>(),
+                        ["Users"] = new List<UserDto>()
+                    },
+                    new DialogOptions { Width = "500px" }
+                );
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Notify(NotificationSeverity.Error,
+                    "Error",
+                    ex.Message);
+            }
+        }
 
         #endregion
     }

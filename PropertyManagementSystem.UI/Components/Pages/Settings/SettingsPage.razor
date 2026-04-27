@@ -1,0 +1,253 @@
+@page "/settings"
+
+<PageTitle>Settings — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem" Style="max-width:900px">
+
+    <PageHeader Title="Settings"
+            Icon="settings"
+            Subtitle="System configuration and analytics overview — Admin only"
+            Style="text-align:center; width:100%;" />
+
+    <RadzenTabs SelectedIndexChanged="@OnTabChanged">
+        <Tabs>
+
+            <RadzenTabsItem Text="System Overview" Icon="analytics">
+                <DataLoadWrapper IsLoading="@loadingAnalytics"
+                                 ErrorMessage="@analyticsError"
+                                 HasData="@(analytics is not null)"
+                                 EmptyMessage="Analytics unavailable." EmptyIcon="analytics">
+                    <DataContent>
+
+                        @if (analytics is not null)
+                        {
+                            <p style="margin:0 0 1rem;font-size:.75rem;color:var(--rz-text-secondary-color)">
+                                <RadzenIcon Icon="schedule" Style="vertical-align:middle;font-size:.9rem" />
+                                Last updated @(analytics?.LastUpdated.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "N/A")
+
+                  
+                            </p>
+                            <RadzenRow Gap="1rem" Style="margin-bottom:1rem">
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Total Users" Value="@(analytics?.TotalUsers.ToString() ?? "0")" Icon="people" Color="Primary" />                               
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Active Users" Value="@analytics.ActiveUsers.ToString()" Icon="how_to_reg" Color="Success" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="New This Month" Value="@analytics.NewUsersThisMonth.ToString()" Icon="person_add" Color="Info" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Total Properties" Value="@analytics.TotalProperties.ToString()" Icon="home_work" Color="Warning" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Total Units" Value="@analytics.TotalUnits.ToString()" Icon="meeting_room" Color="Info" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Avg Occupancy" Value="@($"{analytics.AverageOccupancyRate:F1}%")" Icon="percent" Color="Success" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Active Leases" Value="@analytics.ActiveLeases.ToString()" Icon="description" Color="Primary" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Open Maintenance" Value="@analytics.PendingMaintenanceRequests.ToString()" Icon="build" Color="Danger" />
+                                </RadzenColumn>
+                            </RadzenRow>
+                        }
+                        else
+                        {
+                            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" />
+                        }
+                        @if (analytics is not null)
+                        {
+                            <RadzenCard>
+                                <RadzenRow Gap="1.5rem">
+
+                                    <RadzenColumn SizeXS="12" SizeSM="4">
+                                        <div class="rev-item">
+                                            <span class="rev-val">@analytics.TotalRevenueThisMonth.ToString("C0")</span>
+                                            <span class="rev-lbl">Revenue This Month</span>
+                                        </div>
+                                    </RadzenColumn>
+
+                                    <RadzenColumn SizeXS="12" SizeSM="4">
+                                        <div class="rev-item">
+                                            <span class="rev-val">@analytics.TotalRevenueThisYear.ToString("C0")</span>
+                                            <span class="rev-lbl">Revenue This Year</span>
+                                        </div>
+                                    </RadzenColumn>
+
+                                    <RadzenColumn SizeXS="12" SizeSM="4">
+                                        <div class="rev-item">
+                                            <span class="rev-val">@analytics.AverageMaintenanceResolutionDays.ToString("F1")d</span>
+                                            <span class="rev-lbl">Avg Maint. Resolution</span>
+                                        </div>
+                                    </RadzenColumn>
+
+                                </RadzenRow>
+                            </RadzenCard>
+                        }
+                    </DataContent>
+                </DataLoadWrapper>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Growth" Icon="trending_up">
+                <DataLoadWrapper IsLoading="@loadingGrowth" ErrorMessage="@growthError"
+                                 HasData="@(growth is not null)"
+                                 EmptyMessage="Growth metrics unavailable." EmptyIcon="trending_up">
+                    <DataContent>
+                        @if (growth is null)
+                        {
+                            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" />
+                        }
+                        else
+                        {
+                            <RadzenRow Gap="1rem" Style="margin-bottom:1.25rem">
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="User Growth" Value="@($"{growth!.UserGrowthRate:F1}%")" Icon="person_add" Color="@GC(growth.UserGrowthRate)" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Property Growth" Value="@($"{growth.PropertyGrowthRate:F1}%")" Icon="home_work" Color="@GC(growth.PropertyGrowthRate)" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Revenue Growth" Value="@($"{growth.RevenueGrowthRate:F1}%")" Icon="payments" Color="@GC(growth.RevenueGrowthRate)" />
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Occupancy Growth" Value="@($"{growth.OccupancyGrowthRate:F1}%")" Icon="percent" Color="@GC(growth.OccupancyGrowthRate)" />
+                                </RadzenColumn>
+
+                            </RadzenRow>
+
+                            <RadzenRow Gap="1rem" Style="margin-bottom:1.25rem">
+                                <RadzenColumn SizeXS="12" SizeSM="4">
+                                    <RadzenCard Style="text-align:center">
+                                        <p style="margin:0 0 .25rem;font-size:1.6rem;font-weight:700">@growth.NewPropertiesThisMonth</p>
+                                        <p style="margin:0;font-size:.75rem;color:var(--rz-text-secondary-color)">New Properties</p>
+                                    </RadzenCard>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="12" SizeSM="4">
+                                    <RadzenCard Style="text-align:center">
+                                        <p style="margin:0 0 .25rem;font-size:1.6rem;font-weight:700">@growth.NewLeasesThisMonth</p>
+                                        <p style="margin:0;font-size:.75rem;color:var(--rz-text-secondary-color)">New Leases</p>
+                                    </RadzenCard>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeXS="12" SizeSM="4">
+                                    <RadzenCard Style="text-align:center">
+                                        <p style="margin:0 0 .25rem;font-size:1.6rem;font-weight:700">@growth.NewTenantsThisMonth</p>
+                                        <p style="margin:0;font-size:.75rem;color:var(--rz-text-secondary-color)">New Tenants</p>
+                                    </RadzenCard>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+                            @if (growth?.MonthOverMonthGrowth?.Any() == true)
+                            {
+                                <RadzenCard>
+                                    <h4 style="margin:0 0 1rem">Month-over-Month Growth</h4>
+                                    <RadzenDataGrid Data="@growth.MonthOverMonthGrowth.Select(kvp => new { Metric = kvp.Key, Growth = kvp.Value }).ToList()"
+                                    TItem="@(object)" AllowSorting="true">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="object" Property="Metric" Title="Metric" />
+                                            <RadzenDataGridColumn TItem="object" Property="Growth" Title="Growth %" Width="120px">
+                                                <Template Context="row">
+                                                    @{
+                                                        var g = (double)row.GetType().GetProperty("Growth")!.GetValue(row)!;
+                                                    }
+                                                    <span style="@($"color:{(g >= 0 ? "var(--rz-success)" : "var(--rz-danger)")};font-weight:600")">@(g >= 0 ? "+" : "")@g.ToString("F1")%</span>
+                                                </Template>
+                                            </RadzenDataGridColumn>
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </RadzenCard>
+                            }
+                        }
+                    </DataContent>
+                    </DataLoadWrapper>
+                </RadzenTabsItem>
+
+                <RadzenTabsItem Text="Maint. Trends" Icon="build">
+                    <DataLoadWrapper IsLoading="@loadingTrends" ErrorMessage="@trendsError"
+                                     HasData="@(trends is not null)"
+                                     EmptyMessage="No trend data." EmptyIcon="build">
+                        <DataContent>
+                        @if (trends is null)
+                        {
+                            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" />
+                        }
+                        else
+                        {
+                            <RadzenRow Gap="1rem" Style="margin-bottom:1.25rem">
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Requests This Month" Value="@trends!.TotalRequestsThisMonth.ToString()" Icon="build" Color="Info" />
+                                </RadzenColumn>
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Resolved" Value="@trends.ResolvedThisMonth.ToString()" Icon="check_circle" Color="Success" />
+                                </RadzenColumn>
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Avg Resolution" Value="@($"{trends.AverageResolutionTime:F1}d")" Icon="timer" Color="Warning" />
+                                </RadzenColumn>
+                                <RadzenColumn SizeXS="6" SizeLG="3">
+                                    <StatCard Title="Resolution Rate" Value="@($"{trends.ResolutionRate:F1}%")" Icon="percent" Color="Primary" />
+                                </RadzenColumn>
+                            </RadzenRow>
+                            @if (trends?.MonthlyTrends?.Any() == true)
+                            {
+                                <RadzenCard Style="margin-bottom:1rem">
+                                    <h4 style="margin:0 0 1rem">Monthly Breakdown</h4>
+                                    <RadzenChart Style="height:240px">
+                                        <RadzenBarSeries Data="@trends.MonthlyTrends" CategoryProperty="Month" ValueProperty="TotalRequests" Title="Total" />
+                                        <RadzenBarSeries Data="@trends.MonthlyTrends" CategoryProperty="Month" ValueProperty="ResolvedRequests" Title="Resolved" />
+                                        <RadzenCategoryAxis /><RadzenValueAxis />
+                                        <RadzenLegend Position="LegendPosition.Bottom" />
+                                    </RadzenChart>
+                                </RadzenCard>
+                                <RadzenCard>
+                                    <RadzenDataGrid Data="@trends.MonthlyTrends" TItem="MaintenanceTrendDto" AllowSorting="true" PageSize="8">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="MaintenanceTrendDto" Property="Month" Title="Month" Width="110px" />
+                                            <RadzenDataGridColumn TItem="MaintenanceTrendDto" Property="TotalRequests" Title="Total" Width="80px" />
+                                            <RadzenDataGridColumn TItem="MaintenanceTrendDto" Property="OpenRequests" Title="Open" Width="80px" />
+                                            <RadzenDataGridColumn TItem="MaintenanceTrendDto" Property="ResolvedRequests" Title="Resolved" Width="90px" />
+                                            <RadzenDataGridColumn TItem="MaintenanceTrendDto" Property="AverageResolutionDays" Title="Avg Days" Width="100px" FormatString="{0:F1}" />
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </RadzenCard>
+                            }
+                        }
+                    </DataContent>
+                    </DataLoadWrapper>
+                </RadzenTabsItem>
+
+                <RadzenTabsItem Text="Quick Links" Icon="link">
+                    <RadzenRow Gap="1rem">
+                        @foreach (var link in adminLinks)
+                        {
+                            <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="4">
+                                <div class="link-card" @onclick="@(() => NavigationManager.NavigateTo(link.Url))">
+                                    <RadzenIcon Icon="@link.Icon" Style="font-size:2rem;color:var(--rz-primary)" />
+                                    <div>
+                                        <p style="margin:0;font-weight:600">@link.Title</p>
+                                        <p style="margin:0;font-size:.78rem;color:var(--rz-text-secondary-color)">@link.Description</p>
+                                    </div>
+                                </div>
+                            </RadzenColumn>
+                        }
+                    </RadzenRow>
+                </RadzenTabsItem>
+
+            </Tabs>
+        </RadzenTabs>
+
+    </RadzenStack>
+

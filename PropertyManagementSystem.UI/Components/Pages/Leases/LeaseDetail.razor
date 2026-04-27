@@ -1,0 +1,104 @@
+﻿@page "/lease/{Id:guid}"
+
+<PageTitle>Lease Detail — PMS</PageTitle>
+
+@if (loading)
+{
+    <div style="display:flex;align-items:center;justify-content:center;height:30vh">
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </div>
+}
+else if (lease is null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" AllowClose="false">
+        Lease not found. <RadzenLink Text="Back to list" Path="/leases" />
+    </RadzenAlert>
+}
+else
+{
+    <RadzenStack Gap="1.25rem">
+
+        <PageHeader Title="Lease Agreement" Icon="description" Subtitle="@($"{unitDisplay} · {tenantDisplay}")">
+            <Actions>
+                <RadzenButton Text="Back" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/leases"))" />
+                <AuthorizeView Roles="Admin,Owner">
+                    @if (lease.Status == LeaseStatus.Active.ToString())
+                    {
+                        <RadzenButton Text="Record Payment" Icon="add_card" ButtonStyle="ButtonStyle.Primary" Click="@OpenRecordPayment" />
+                    }
+                </AuthorizeView>
+            </Actions>
+        </PageHeader>
+
+        <RadzenTabs>
+            <Tabs>
+
+                <RadzenTabsItem Text="Lease Info" Icon="description">
+                    <RadzenCard>
+                        <RadzenRow Gap="1.5rem">
+                            <RadzenColumn SizeXS="12" SizeMD="6">
+                                <RadzenStack Gap=".75rem">
+                                    <DetailRow Label="Unit" Value="@unitDisplay" />
+                                    <DetailRow Label="Tenant" Value="@tenantDisplay" />
+                                    <div>
+                                        <p class="dr-label">Status</p>
+                                        <StatusBadge Status="@lease.Status" />
+                                    </div>
+                                </RadzenStack>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeMD="6">
+                                <RadzenStack Gap=".75rem">
+                                    <DetailRow Label="Start Date" Value="@lease.StartDate.ToString("yyyy-MM-dd")" />
+                                    <DetailRow Label="End Date" Value="@lease.EndDate.ToString("yyyy-MM-dd")" />
+                                    <DetailRow Label="Monthly Rent" Value="@lease.RentAmount.ToString("C0")" />
+                                    <DetailRow Label="Days Remaining" Value="@DaysRemaining()" />
+                                </RadzenStack>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenCard>
+                </RadzenTabsItem>
+
+                <RadzenTabsItem Text="@($"Payments ({_payments.Count})")" Icon="payments">
+                    @if (loadingPayments)
+                    {
+                        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                    }
+                    else if (!_payments.Any())
+                    {
+                        <EmptyState Message="No payments recorded for this lease." Icon="payments" />
+                    }
+                    else
+                    {
+                        <RadzenCard Style="margin-bottom:1rem">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem" Wrap="FlexWrap.Wrap">
+                                <div>
+                                    <p class="dr-label">Total Received</p>
+                                    <p style="font-size:1.4rem;font-weight:700;margin:0;color:var(--rz-success)">
+                                        @_payments.Where(p => p.Status == "Completed").Sum(p => p.Amount).ToString("C0")
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="dr-label">Payments</p>
+                                    <p style="font-size:1.4rem;font-weight:700;margin:0">@_payments.Count</p>
+                                </div>
+                            </RadzenStack>
+                        </RadzenCard>
+
+                        <RadzenDataGrid Data="@_payments" TItem="PaymentDto"
+                                        AllowSorting="true" AllowPaging="true" PageSize="10">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="PaymentDto" Property="PaymentDate" Title="Date" Width="160px" FormatString="{0:yyyy-MM-dd HH:mm}" />
+                                <RadzenDataGridColumn TItem="PaymentDto" Property="Amount" Title="Amount" Width="130px" FormatString="{0:C0}" />
+                                <RadzenDataGridColumn TItem="PaymentDto" Property="Status" Title="Status" Width="120px">
+                                    <Template Context="p"><StatusBadge Status="@p.Status" /></Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                </RadzenTabsItem>
+
+            </Tabs>
+        </RadzenTabs>
+
+    </RadzenStack>
+}
