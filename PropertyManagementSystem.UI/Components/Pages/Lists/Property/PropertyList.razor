@@ -1,0 +1,107 @@
+@page "/properties"
+
+<PageTitle>Properties — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+
+    <PageHeader Title="Properties" Icon="home_work" Subtitle="Manage all registered properties">
+        <Actions>
+            <RadzenButton Text="Add Property" Icon="add_home"
+                          ButtonStyle="ButtonStyle.Primary" Click="@OpenAdd" />
+        </Actions>
+    </PageHeader>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                     Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    <AuthorizeView Roles="Admin">
+        @if (all.Any(p => p.Status == PropertyEnum.Pending.ToString()))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" AllowClose="false">
+                <RadzenIcon Icon="pending_actions" Style="vertical-align:middle;margin-right:.4rem" />
+                <strong>@all.Count(p => p.Status == PropertyEnum.Pending.ToString())</strong> propert@(all.Count(p => p.Status == PropertyEnum.Pending.ToString()) == 1 ? "y" : "ies") pending approval.
+            </RadzenAlert>
+        }
+    </AuthorizeView>
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".5rem" Wrap="FlexWrap.Wrap">
+        <RadzenLabel Text="Status:" Style="font-weight:600" />
+        <RadzenSelectBar @bind-Value="statusFilter" TValue="string" Change="@ApplyFilter">
+            <Items>
+                <RadzenSelectBarItem Text="All" Value="@("")" />
+                <RadzenSelectBarItem Text="Approved" Value="@("Approved")" />
+                <RadzenSelectBarItem Text="Pending" Value="@("Pending")" />
+                <RadzenSelectBarItem Text="Rejected" Value="@("Reject")" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@rows"
+                        TItem="PropertyDto"
+                        IsLoading="@loading"
+                        AllowSorting="true"
+                        AllowPaging="true"
+                        PageSize="15"
+                        AllowFiltering="true"
+                        FilterMode="FilterMode.SimpleWithMenu"
+                        AllowColumnResize="true"
+                        EmptyText="No properties found.">
+            <Columns>
+
+                <RadzenDataGridColumn TItem="PropertyDto" Property="Address"  Title="Address"  MinWidth="200px" />
+                <RadzenDataGridColumn TItem="PropertyDto" Property="Category" Title="Category" Width="160px" />
+
+                <RadzenDataGridColumn TItem="PropertyDto" Property="Status" Title="Status" Width="130px" Filterable="false">
+                    <Template Context="p">
+                        <StatusBadge Status="@p.Status" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <AuthorizeView Roles="Admin">
+                    <RadzenDataGridColumn TItem="PropertyDto" Title="Approval" Width="200px" Filterable="false" Sortable="false">
+                        <Template Context="p">
+                            @if (p.Status == PropertyEnum.Pending.ToString())
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap=".3rem">
+                                    <RadzenButton Text="Approve" Icon="check_circle"
+                                                  Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Success"
+                                                  Click="@(() => Approve(p))"
+                                                  IsBusy="@(busyId == p.Id)" />
+
+                                    <RadzenButton Text="Reject"  Icon="cancel"
+                                                  Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger"
+                                                  Click="@(() => Reject(p))"
+                                                  IsBusy="@(busyId == p.Id)" />
+                                </RadzenStack>
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                </AuthorizeView>
+
+                <RadzenDataGridColumn TItem="PropertyDto" Title="Actions" Width="130px" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+                    <Template Context="p">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap=".25rem" JustifyContent="JustifyContent.Center">
+                            <RadzenButton Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                          Tooltip="View" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => NavigationManager.NavigateTo($"/properties/{p.Id}"))" />
+
+                            <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info"
+                                          Tooltip="Edit" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => OpenEdit(p))" />
+
+                            <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger"
+                                          Tooltip="Delete" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => ConfirmDelete(p))" />
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+</RadzenStack>

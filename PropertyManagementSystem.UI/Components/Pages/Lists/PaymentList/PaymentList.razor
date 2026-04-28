@@ -1,0 +1,104 @@
+﻿@page "/payments"
+
+<PageTitle> Payment Details</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+
+    <PageHeader Title="Payments" Icon="payments" Subtitle="Track all rent payments">
+        <Actions>
+            <AuthorizeView Roles="Admin,Owner">
+                <RadzenButton Text="Record Payment" Icon="add_card" ButtonStyle="ButtonStyle.Primary" Click="@OpenRecord" />
+            </AuthorizeView>
+        </Actions>
+    </PageHeader>
+
+    <RadzenRow Gap="1rem">
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="Total Payments" Value="@all.Count.ToString()"
+                      Icon="receipt_long" Color="Info" IsLoading="@loading" />
+        </RadzenColumn>
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="Total Received"
+                      Value="@all.Where(p => p.Status == PaymentEnum.Completed.ToString()).Sum(p => p.Amount).ToString("C0")"
+                      Icon="payments" Color="Success" IsLoading="@loading" />
+        </RadzenColumn>
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="This Month"
+                      Value="@all.Where(p => p.PaymentDate >= monthStart && p.Status == PaymentEnum.Completed.ToString()).Sum(p => p.Amount).ToString("C0")"
+                      Icon="calendar_month" Color="Warning" IsLoading="@loading" />
+        </RadzenColumn>
+        <RadzenColumn SizeXS="12" SizeSM="6" SizeLG="3">
+            <StatCard Title="Pending"
+                      Value="@all.Count(p => p.Status == PaymentEnum.Pending.ToString()).ToString()"
+                      Icon="pending" Color="Danger" IsLoading="@loading" />
+        </RadzenColumn>
+    </RadzenRow>
+
+    @if (monthlyData.Any())
+    {
+        <RadzenCard>
+            <h4 style="margin:0 0 1rem">Monthly Revenue</h4>
+            <RadzenChart Style="height:200px">
+                <RadzenBarSeries Data="@monthlyData"
+                                 CategoryProperty="Month"
+                                 ValueProperty="Amount"
+                                 Title="Revenue" />
+                <RadzenCategoryAxis />
+                <RadzenValueAxis Formatter="@((v) => ((decimal)v).ToString("C0"))" />
+                <RadzenLegend Visible="false" />
+            </RadzenChart>
+        </RadzenCard>
+    }
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".75rem" Wrap="FlexWrap.Wrap">
+        <RadzenLabel Text="Lease:" Style="font-weight:600" />
+        <RadzenDropDown @bind-Value="leaseFilter"
+                        Data="@leases" ValueProperty="Id"
+                        TextProperty="Id"
+                        AllowClear="true" Placeholder="All leases"
+                        Style="min-width:240px"
+                        Change="@ApplyFilter" />
+        <RadzenLabel Text="Status:" Style="font-weight:600" />
+        <RadzenSelectBar @bind-Value="statusFilter" TValue="string" Change="@ApplyFilter">
+            <Items>
+                <RadzenSelectBarItem Text="All" Value="@("")" />
+                <RadzenSelectBarItem Text="Completed" Value="@("Completed")" />
+                <RadzenSelectBarItem Text="Pending" Value="@("Pending")" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                     Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@rows"
+                        TItem="PaymentDto"
+                        IsLoading="@loading"
+                        AllowSorting="true"
+                        AllowPaging="true"
+                        PageSize="15"
+                        EmptyText="No payments found.">
+            <Columns>
+                <RadzenDataGridColumn TItem="PaymentDto" Property="PaymentDate" Title="Date"   Width="170px" FormatString="{0:yyyy-MM-dd HH:mm}" />
+                <RadzenDataGridColumn TItem="PaymentDto" Property="LeaseId"     Title="Lease"  MinWidth="160px">
+                    <Template Context="p">
+                        @{
+                            var lease = leases.FirstOrDefault(l => l.Id == p.LeaseId);
+                            var unit  = lease is not null ? units.FirstOrDefault(u => u.Id == lease.UnitId) : null;
+                        }
+                        @(unit?.UnitNumber ?? p.LeaseId.ToString()[..8] + "…")
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="PaymentDto" Property="Amount" Title="Amount" Width="130px" FormatString="{0:C0}" />
+                <RadzenDataGridColumn TItem="PaymentDto" Property="Status" Title="Status" Width="120px">
+                    <Template Context="p"><StatusBadge Status="@p.Status" /></Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+</RadzenStack>

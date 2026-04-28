@@ -1,0 +1,105 @@
+﻿@page "/properties/{Id:guid}"
+@using PropertyManagementSystem.Application.DTOs.AuditLog
+
+<PageTitle>Property — PMS</PageTitle>
+
+@if (loading)
+{
+    <div style="display:flex;align-items:center;justify-content:center;height:30vh">
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </div>
+}
+else if (property is null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" AllowClose="false">
+        Property not found. <RadzenLink Text="Back to list" Path="/properties" />
+    </RadzenAlert>
+}
+else
+{
+    <RadzenStack Gap="1.25rem">
+
+        <PageHeader Title="@property.Address" Icon="home_work" Subtitle="@($"{property.Category} · {property.Status}")">
+            <Actions>
+                <RadzenButton Text="Back" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/properties"))" />
+                <RadzenButton Text="Edit" Icon="edit" ButtonStyle="ButtonStyle.Info" Click="@OpenEdit" />
+            </Actions>
+        </PageHeader>
+
+        <RadzenTabs>
+            <Tabs>
+                <RadzenTabsItem Text="Overview" Icon="info">
+                    <RadzenCard>
+                        <RadzenRow Gap="1.5rem">
+                            <RadzenColumn SizeXS="12" SizeMD="6">
+                                <RadzenStack Gap=".75rem">
+                                    <DetailRow Label="Address" Value="@property.Address" />
+                                    <DetailRow Label="Category" Value="@property.Category" />
+                                    <div>
+                                        <p class="dr-label">Status</p>
+                                        <StatusBadge Status="@property.Status" />
+                                    </div>
+                                </RadzenStack>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeMD="6">
+                                <RadzenStack Gap=".75rem">
+                                    <DetailRow Label="Total Units" Value="@units.Count.ToString()" />
+                                    <DetailRow Label="Available" Value="@units.Count(u => u.Status == "Available").ToString()" />
+                                    <DetailRow Label="Occupied" Value="@units.Count(u => u.Status == "Occupied").ToString()" />
+                                </RadzenStack>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenCard>
+                </RadzenTabsItem>
+
+                <RadzenTabsItem Text="@($"Units ({units.Count})")" Icon="meeting_room">
+                    <RadzenStack Gap="1rem">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                            <RadzenButton Text="Add Unit" Icon="add" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Primary" Click="@OpenAddUnit" />
+                        </RadzenStack>
+
+                        <RadzenDataGrid Data="@units" TItem="UnitDto" AllowSorting="true" AllowPaging="true" PageSize="10" EmptyText="No units added yet.">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="UnitDto" Property="UnitNumber" Title="Unit #" Width="120px" />
+                                <RadzenDataGridColumn TItem="UnitDto" Property="RentAmount" Title="Rent/mo" Width="130px" FormatString="{0:C0}" />
+                                <RadzenDataGridColumn TItem="UnitDto" Property="Status" Title="Status" Width="120px">
+                                    <Template Context="u"><StatusBadge Status="@u.Status" /></Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="UnitDto" Title="Actions" Width="80px" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+                                    <Template Context="u">
+                                        <RadzenButton Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                                      Click="@(() => NavigationManager.NavigateTo($"/units/{u.Id}"))" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    </RadzenStack>
+                </RadzenTabsItem>
+
+                <RadzenTabsItem Text="Audit History" Icon="history">
+                    @if (loadingAudit)
+                    {
+                        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                    }
+                    else if (!audit.Any())
+                    {
+                        <EmptyState Message="No audit history for this property." Icon="history" />
+                    }
+                    else
+                    {
+                        <RadzenDataGrid Data="@audit" TItem="AuditLogDto" AllowSorting="true" AllowPaging="true" PageSize="10">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="AuditLogDto" Property="CreatedAt" Title="Date" Width="170px" FormatString="{0:yyyy-MM-dd HH:mm}" />
+                                <RadzenDataGridColumn TItem="AuditLogDto" Property="Action" Title="Action" Width="120px" />
+                                <RadzenDataGridColumn TItem="AuditLogDto" Property="UserName" Title="By" Width="160px" />
+                                <RadzenDataGridColumn TItem="AuditLogDto" Property="IpAddress" Title="IP" Width="140px" />
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                </RadzenTabsItem>
+
+            </Tabs>
+        </RadzenTabs>
+
+    </RadzenStack>
+}

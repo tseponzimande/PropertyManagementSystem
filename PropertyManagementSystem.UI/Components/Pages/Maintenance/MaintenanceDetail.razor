@@ -1,0 +1,72 @@
+﻿@page "/maintenance/{Id:guid}"
+
+<PageTitle>Maintenance Request — PMS</PageTitle>
+
+@if (loading)
+{
+    <div style="display:flex;align-items:center;justify-content:center;height:30vh">
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </div>
+}
+else if (request is null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" AllowClose="false">
+        Request not found. <RadzenLink Text="Back to list" Path="/maintenance" />
+    </RadzenAlert>
+}
+else
+{
+    <RadzenStack Gap="1.25rem">
+
+        <PageHeader Title="@request.Title" Icon="build" Subtitle="@($"Unit: {unitNumber} · Status: {request.Status}")">
+            <Actions>
+                <RadzenButton Text="Back" Icon="arrow_back" ButtonStyle="ButtonStyle.Light"
+                              Click="@(() => NavigationManager.NavigateTo("/maintenance"))" />
+            </Actions>
+        </PageHeader>
+
+        <RadzenRow Gap="1rem">
+
+            <RadzenColumn SizeXS="12" SizeLG="8">
+                <RadzenCard>
+                    <h4 style="margin:0 0 1rem">Request Details</h4>
+                    <RadzenStack Gap=".75rem">
+                        <DetailRow Label="Title" Value="@request.Title" />
+                        <DetailRow Label="Unit" Value="@unitNumber" />
+                        <div>
+                            <p class="dr-label">Status</p>
+                            <StatusBadge Status="@request.Status" />
+                        </div>
+                        <div>
+                            <p class="dr-label">Description</p>
+                            <p style="margin:0;white-space:pre-wrap">@request.Description</p>
+                        </div>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <AuthorizeView Roles="Admin,Owner">
+                <RadzenColumn SizeXS="12" SizeLG="4">
+                    <RadzenCard>
+                        <h4 style="margin:0 0 1rem">Update Status</h4>
+                        <RadzenStack Gap="1rem">
+                            <RadzenFormField Text="New Status" Variant="Variant.Outlined" Style="width:100%">
+                                <RadzenDropDown @bind-Value="newStatus"
+                                                Data="@statusOptions"
+                                                Style="width:100%" />
+                            </RadzenFormField>
+                            <RadzenButton Text="Apply Update" Icon="check_circle"
+                                          ButtonStyle="ButtonStyle.Success"
+                                          Style="width:100%"
+                                          Click="@SaveStatus"
+                                          IsBusy="@saving"
+                                          Disabled="@(newStatus == request.Status)" />
+                        </RadzenStack>
+                    </RadzenCard>
+                </RadzenColumn>
+            </AuthorizeView>
+
+        </RadzenRow>
+
+    </RadzenStack>
+}

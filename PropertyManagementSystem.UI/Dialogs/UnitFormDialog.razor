@@ -1,0 +1,65 @@
+﻿@using Radzen.Blazor
+
+<RadzenTemplateForm TItem="UnitDto" Data="@Model" Submit="@Save">
+    <RadzenStack Gap="1rem">
+
+        <RadzenFormField Text="Property" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@Model.PropertyId"
+                                Name="PropertyId"
+                                Data="@Properties"
+                                ValueProperty="Id"
+                                TextProperty="Address"
+                                Style="width:100%"
+                                Placeholder="Select property"
+                                Disabled="@(Properties.Count == 1)" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="PropertyId" Text="Property is required" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Unit Number" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@Model.UnitNumber" Name="UnitNumber" Placeholder="e.g. A101" Style="width:100%" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="UnitNumber" Text="Unit number is required" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Monthly Rent (R)" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenNumeric @bind-Value="@Model.RentAmount" Name="RentAmount"
+                               Min="0" Step="100" Style="width:100%" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="RentAmount" Text="Rent amount is required" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Status" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@Model.Status" Name="Status"
+                                Data="@statuses" Style="width:100%" />
+            </ChildContent>
+        </RadzenFormField>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                         Size="AlertSize.Small" AllowClose="false">@error</RadzenAlert>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Variant="Variant.Outlined"
+                          Click="@(() => DialogService.Close(false))" />
+            <RadzenButton ButtonType="ButtonType.Submit"
+                          Text="@(IsEdit ? "Save Changes" : "Create Unit")"
+                          Icon="@(IsEdit ? "save" : "add")"
+                          ButtonStyle="ButtonStyle.Primary"
+                          IsBusy="@busy" BusyText="Saving..." />
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenTemplateForm>

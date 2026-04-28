@@ -1,0 +1,49 @@
+@using Radzen.Blazor
+
+<RadzenTemplateForm TItem="PropertyDto" Data="@Model" Submit="@Save">
+    <RadzenStack Gap="1rem">
+
+        <RadzenFormField Text="Address" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@Model.Address" Name="Address" Placeholder="e.g. 12 Main Street, Sandton" Style="width:100%" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Address" Text="Address is required" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Category" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@Model.Category" Name="Category" Data="@_categories" Style="width:100%" Placeholder="Select category" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Category" Text="Category is required" />
+            </Helper>
+        </RadzenFormField>
+
+        @if (IsEdit)
+        {
+            <RadzenFormField Text="Status" Variant="Variant.Outlined" Style="width:100%">
+                <ChildContent>
+                    <RadzenDropDown @bind-Value="@Model.Status" Name="Status" Data="@_statuses" Style="width:100%" />
+                </ChildContent>
+            </RadzenFormField>
+        }
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Size="AlertSize.Small" AllowClose="false">@_error</RadzenAlert>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Variant="Variant.Outlined" Click="@(() => DialogService.Close(false))" />
+
+            <RadzenButton ButtonType="ButtonType.Submit" Text="@(IsEdit ? "Save Changes" : "Create Property")" Icon="@(IsEdit ? "save" : "add_home")"
+                          ButtonStyle="ButtonStyle.Primary"
+                          IsBusy="@_busy" BusyText="Saving..." />
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenTemplateForm>
+
