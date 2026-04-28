@@ -213,8 +213,8 @@
         <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" Gap="0.75rem">
 
             <AuthorizeView Roles="Admin,Owner">
-                <RadzenButton Text="Add Property" Icon="add_home" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/properties/new"))" />
-                <RadzenButton Text="Add Unit" Icon="add_business" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/units/new"))" />
+                <RadzenButton Text="Add Property" Icon="add_home" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/properties"))" />
+                <RadzenButton Text="Add Unit" Icon="add_business" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/units"))" />
                 <RadzenButton Text="New Lease"
                               Icon="note_add"
                               Click="@OpenNewLeaseDialog" />
@@ -222,7 +222,7 @@
             </AuthorizeView>
 
             <AuthorizeView Roles="Tenant">
-                <RadzenButton Text="Submit Maintenance" Icon="build_circle" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/maintenance/new"))" />
+                <RadzenButton Text="Submit Maintenance" Icon="build_circle" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/maintenance"))" />
             </AuthorizeView>
 
             <RadzenButton Text="Record Payment" Icon="add_card" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/payments"))" />

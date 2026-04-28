@@ -1,0 +1,86 @@
+﻿@page "/maintenance"
+
+<PageTitle>Maintenance — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+
+    <PageHeader Title="Maintenance Requests" Icon="build" Subtitle="@subtitle">
+        <Actions>
+            <RadzenButton Text="New Request" Icon="build_circle" ButtonStyle="ButtonStyle.Primary" Click="@OpenCreate" />
+        </Actions>
+    </PageHeader>
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".5rem" Wrap="FlexWrap.Wrap">
+        <RadzenLabel Text="Status:" Style="font-weight:600" />
+        <RadzenSelectBar @bind-Value="statusFilter" TValue="string" Change="@ApplyFilter">
+            <Items>
+                <RadzenSelectBarItem Text="All" Value="@("")" />
+                <RadzenSelectBarItem Text="Open" Value="@("Open")" />
+                <RadzenSelectBarItem Text="In Progress" Value="@("InProgress")" />
+                <RadzenSelectBarItem Text="Resolved" Value="@("Resolved")" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@rows"
+                        TItem="MaintenanceRequestDto"
+                        IsLoading="@loading"
+                        AllowSorting="true"
+                        AllowPaging="true"
+                        PageSize="15"
+                        AllowColumnResize="true"
+                        EmptyText="No maintenance requests found.">
+            <Columns>
+
+                <RadzenDataGridColumn TItem="MaintenanceRequestDto" Property="Title" Title="Title" MinWidth="180px" />
+                <RadzenDataGridColumn TItem="MaintenanceRequestDto" Property="Description" Title="Description" MinWidth="200px">
+                    <Template Context="m">
+                        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:280px" title="@m.Description">@m.Description</span>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="MaintenanceRequestDto" Property="UnitId" Title="Unit" Width="120px">
+                    <Template Context="m">
+                        @(_units.FirstOrDefault(u => u.Id == m.UnitId)?.UnitNumber ?? "—")
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="MaintenanceRequestDto" Property="Status" Title="Status" Width="140px">
+                    <Template Context="m"><StatusBadge Status="@m.Status" /></Template>
+                </RadzenDataGridColumn>
+
+                <AuthorizeView Roles="Admin,Owner">
+                    <RadzenDataGridColumn TItem="MaintenanceRequestDto" Title="Update Status" Width="180px" Filterable="false" Sortable="false">
+                        <Template Context="m">
+                            @* @if (m.Status != "Resolved") *@
+                            @if (m.Status != MaintenanceRequestEnum.Resolved.ToString())
+                            {
+                                <RadzenDropDown Value="@m.Status" TValue="string"
+                                                Data="@nextStatuses(m.Status)"
+                                                Style="width:150px"
+                                                Change="@(async (object v) => await UpdateStatus(m, v.ToString()!))" />
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                </AuthorizeView>
+
+                <RadzenDataGridColumn TItem="MaintenanceRequestDto" Title="Actions" Width="90px"
+                                      Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+                    <Template Context="m">
+                        <RadzenButton Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                      Tooltip="View" TooltipPosition="TooltipPosition.Top"
+                                      Click="@(() => NavigationManager.NavigateTo($"/maintenance/{m.Id}"))" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+</RadzenStack>

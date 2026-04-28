@@ -1,0 +1,91 @@
+﻿@page "/units"
+
+<PageTitle>Units — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+
+    <PageHeader Title="Units" Icon="meeting_room" Subtitle="Manage all property units">
+        <Actions>
+            <RadzenButton Text="Add Unit" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@OpenAdd" />
+        </Actions>
+    </PageHeader>
+
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".75rem" Wrap="FlexWrap.Wrap">
+        <RadzenLabel Text="Status:" Style="font-weight:600" />
+        <RadzenSelectBar @bind-Value="statusFilter" TValue="string" Change="@ApplyFilter">
+            <Items>
+                <RadzenSelectBarItem Text="All" Value="@("")" />
+                <RadzenSelectBarItem Text="Available" Value="@("Available")" />
+                <RadzenSelectBarItem Text="Occupied" Value="@("Occupied")" />
+            </Items>
+        </RadzenSelectBar>
+        <RadzenLabel Text="Property:" Style="font-weight:600" />
+        <RadzenDropDown @bind-Value="propFilter"
+                        Data="@properties"
+                        ValueProperty="Id" TextProperty="Address"
+                        AllowClear="true" Placeholder="All properties"
+                        Style="min-width:220px"
+                        Change="@ApplyFilter" />
+    </RadzenStack>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Close="@(() => error = null)">@error</RadzenAlert>
+    }
+
+    <RadzenCard>
+	
+        <RadzenDataGrid Data="@rows"
+                        TItem="UnitDto"
+                        IsLoading="@loading"
+                        AllowSorting="true"
+                        AllowPaging="true"
+                        PageSize="15"
+                        AllowColumnResize="true"
+                        EmptyText="No units found.">
+            <Columns>
+
+                <RadzenDataGridColumn TItem="UnitDto" Property="UnitNumber" Title="Unit #" Width="120px" />
+
+                <RadzenDataGridColumn TItem="UnitDto" Property="PropertyId" Title="Property" MinWidth="180px">
+                    <Template Context="u">
+                        @(properties.FirstOrDefault(p => p.Id == u.PropertyId)?.Address ?? "—")
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="UnitDto" Property="RentAmount" Title="Rent / mo" Width="130px" FormatString="{0:C0}" />
+
+                <RadzenDataGridColumn TItem="UnitDto" Property="Status" Title="Status" Width="180px" Sortable="false">
+                    <Template Context="u">
+                        <RadzenDropDown Value="@u.Status" TValue="string"
+                                        Data="@_unitStatuses"
+                                        Style="width:140px"
+                                        Change="@(async (object v) => await UpdateStatus(u, v.ToString()!))" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="UnitDto" Title="Actions" Width="120px" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+                    <Template Context="u">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap=".25rem" JustifyContent="JustifyContent.Center">
+						
+                            <RadzenButton Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                          Tooltip="View" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => NavigationManager.NavigateTo($"/units/{u.Id}"))" />
+										  
+                            <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info"
+                                          Tooltip="Edit"   TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => OpenEdit(u))" />
+										  
+                            <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger"
+                                          Tooltip="Delete" TooltipPosition="TooltipPosition.Top"
+                                          Click="@(() => ConfirmDelete(u))" />
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+</RadzenStack>

@@ -1,0 +1,48 @@
+﻿@using Radzen
+@using Radzen.Blazor
+
+<RadzenTemplateForm TItem="MaintenanceRequestDto" Data="@model" Submit="@Save">
+    <RadzenStack Gap="1rem">
+
+        <RadzenFormField Text="Unit" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenDropDown @bind-Value="@model.UnitId" Name="UnitId"
+                                Data="@Units" ValueProperty="Id" TextProperty="UnitNumber"
+                                Style="width:100%" Placeholder="Select unit" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="UnitId" Text="Unit is required" /></Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Title" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@model.Title" Name="Title" Placeholder="Brief summary of the issue" Style="width:100%" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Title" Text="Title is required" />
+                <RadzenLengthValidator Component="Title" Max="120" Text="Max 120 characters" />
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenFormField Text="Description" Variant="Variant.Outlined" Style="width:100%">
+            <ChildContent>
+                <RadzenTextArea @bind-Value="@model.Description" Name="Description" Placeholder="Describe the issue in detail" Rows="4" Style="width:100%" />
+            </ChildContent>
+            <Helper><RadzenRequiredValidator Component="Description" Text="Description is required" /></Helper>
+        </RadzenFormField>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
+                         Size="AlertSize.Small" AllowClose="false">@error</RadzenAlert>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap=".5rem">
+
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Variant="Variant.Outlined" Click="@(() => DialogService.Close(false))" />
+
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Submit Request" Icon="build_circle" ButtonStyle="ButtonStyle.Primary" IsBusy="@isLoading" BusyText="Submitting..." />
+
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenTemplateForm>
