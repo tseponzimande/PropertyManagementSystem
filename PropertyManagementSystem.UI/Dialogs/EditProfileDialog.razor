@@ -1,0 +1,55 @@
+﻿@using Radzen.Blazor
+
+<RadzenCard Style="width:450px">
+    <h4>Edit Profile</h4>
+
+    <RadzenTemplateForm TItem="UserDto" Data="@model" Submit="@SaveProfile">
+        <RadzenStack Gap="1rem">
+
+            <RadzenFormField Text="Full Name" Style="width:100%">
+                <ChildContent>
+                    <RadzenTextBox @bind-Value="@model.Name" Name="Name" Style="width:100%" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Name" Text="Name is required" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Email Address" Style="width:100%">
+                <ChildContent>
+                    <RadzenTextBox @bind-Value="@model.Email" Name="Email" Style="width:100%" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Email" Text="Email is required" />
+                    <RadzenEmailValidator Component="Email" Text="Enter a valid email" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Role" Style="width:100%">
+                <ChildContent>
+                    <RadzenTextBox Value="@model.Role" Disabled="true" Style="width:100%" />
+                </ChildContent>
+            </RadzenFormField>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat">
+                    @error
+                </RadzenAlert>
+            }
+
+            <RadzenButton ButtonType="ButtonType.Submit"
+                          Text="Save Changes"
+                          Icon="save"
+                          ButtonStyle="ButtonStyle.Primary"
+                          IsBusy="@loading"
+                          BusyText="Saving..." />
+
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenCard>
+
+@code {
+
+    
+}
