@@ -147,7 +147,7 @@
                                 <RadzenMarkers MarkerType="MarkerType.Circle" />
                             </RadzenLineSeries>
                             <RadzenCategoryAxis />
-                            <RadzenValueAxis Formatter="@((v) => ((decimal)v).ToString("C0"))" />
+                            <RadzenValueAxis Formatter="@(v => Convert.ToDecimal(v).ToString("C0"))" />
                             <RadzenLegend Visible="false" />
                         </RadzenChart>
                     }

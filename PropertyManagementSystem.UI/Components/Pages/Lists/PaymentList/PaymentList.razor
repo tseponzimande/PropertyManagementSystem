@@ -44,7 +44,7 @@
                                  ValueProperty="Amount"
                                  Title="Revenue" />
                 <RadzenCategoryAxis />
-                <RadzenValueAxis Formatter="@((v) => ((decimal)v).ToString("C0"))" />
+                <RadzenValueAxis Formatter="@(v => Convert.ToDecimal(v).ToString("C0"))" />      
                 <RadzenLegend Visible="false" />
             </RadzenChart>
         </RadzenCard>
@@ -70,8 +70,7 @@
 
     @if (!string.IsNullOrEmpty(error))
     {
-        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat"
-                     Close="@(() => error = null)">@error</RadzenAlert>
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Close="@(() => error = null)">@error</RadzenAlert>
     }
 
     <RadzenCard>
@@ -95,7 +94,9 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="PaymentDto" Property="Amount" Title="Amount" Width="130px" FormatString="{0:C0}" />
                 <RadzenDataGridColumn TItem="PaymentDto" Property="Status" Title="Status" Width="120px">
-                    <Template Context="p"><StatusBadge Status="@p.Status" /></Template>
+                    <Template Context="p">
+                        <StatusBadge Status="@p.Status" />
+                    </Template>
                 </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
