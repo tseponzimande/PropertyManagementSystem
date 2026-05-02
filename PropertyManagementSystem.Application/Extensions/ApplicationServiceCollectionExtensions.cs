@@ -39,6 +39,7 @@
             services.AddScoped<IPropertyService, PropertyService>();
             services.AddScoped<IUnitService, UnitService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IReportingService, ReportingService>();
 
             #endregion
 
