@@ -1,0 +1,258 @@
+﻿@page "/reports"
+
+<PageTitle>Reports — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem">
+    <PageHeader Title="Reports" Icon="bar_chart" Subtitle="Generate financial, occupancy and operational reports" />
+
+    <RadzenTabs>
+        <Tabs>
+
+            <RadzenTabsItem Text="Financial" Icon="payments">
+                <RadzenStack Gap="1.25rem">
+                    <RadzenCard>
+                        <RadzenRow Gap="1rem" AlignItems="AlignItems.End">
+                            <RadzenColumn SizeXS="12" SizeSM="4">
+                                <RadzenFormField Text="From" Variant="Variant.Outlined" Style="width:100%">
+                                    <RadzenDatePicker @bind-Value="finStart" DateFormat="yyyy-MM-dd" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeSM="4">
+                                <RadzenFormField Text="To" Variant="Variant.Outlined" Style="width:100%">
+                                    <RadzenDatePicker @bind-Value="finEnd" DateFormat="yyyy-MM-dd" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeSM="4">
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap=".5rem">
+                                    <RadzenButton Text="Generate" Icon="bar_chart" ButtonStyle="ButtonStyle.Primary"
+                                                  Click="@LoadFinancial" IsBusy="@loadingFin" />
+                                    @if (financial is not null)
+                                    {
+                                        <RadzenButton Text="Export CSV" Icon="download" ButtonStyle="ButtonStyle.Light"
+                                                      Click="@ExportFinancial" IsBusy="@exporting" />
+                                    }
+                                </RadzenStack>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenCard>
+
+                    @if (financial is not null)
+                    {
+                        <RadzenRow Gap="1rem">
+                            <RadzenColumn SizeXS="6" SizeLG="3">
+                                <StatCard Title="Total Revenue" Value="@financial.TotalRevenue.ToString("C0")" Icon="payments" Color="Success" />
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Total Pending" Value="@financial.TotalPending.ToString("C0")" Icon="pending" Color="Warning" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Completed" Value="@financial.TotalPayments.ToString()" Icon="check_circle" Color="Info" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Pending Count" Value="@financial.PendingPayments.ToString()" Icon="hourglass_top" Color="Danger" /></RadzenColumn>
+                        </RadzenRow>
+                        @if (financial.PaymentBreakdown.Any())
+                        {
+                            <RadzenCard>
+                                <h4 style="margin:0 0 1rem">Monthly Breakdown</h4>
+                                <RadzenChart Style="height:220px">
+                                    <RadzenBarSeries Data="@financial.PaymentBreakdown" CategoryProperty="Month" ValueProperty="Amount" Title="Revenue" />
+                                    <RadzenCategoryAxis />
+                                    <RadzenValueAxis Formatter="@((v) => Convert.ToDecimal(v).ToString("C0"))" />
+                                    <RadzenLegend Visible="false" />
+                                </RadzenChart>
+                            </RadzenCard>
+                        }
+                        @if (financial.PropertyRevenue.Any())
+                        {
+                            <RadzenCard>
+                                <h4 style="margin:0 0 1rem">Revenue by Property</h4>
+                                <RadzenDataGrid Data="@financial.PropertyRevenue" TItem="PropertyRevenueDto"
+                                                AllowSorting="true" AllowPaging="true" PageSize="10">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="PropertyRevenueDto" Property="Address" Title="Property" MinWidth="200px" />
+                                        <RadzenDataGridColumn TItem="PropertyRevenueDto" Property="Revenue" Title="Revenue" Width="140px" FormatString="{0:C0}" />
+                                        <RadzenDataGridColumn TItem="PropertyRevenueDto" Property="PaymentCount" Title="Payments Made" Width="140px" />
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </RadzenCard>
+                        }
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Occupancy" Icon="home_work">
+                <RadzenStack Gap="1.25rem">
+                    <RadzenCard>
+                        <RadzenButton Text="Generate" Icon="bar_chart" ButtonStyle="ButtonStyle.Primary"
+                                      Click="@LoadOccupancy" IsBusy="@loadingOcc" />
+                    </RadzenCard>
+                    @if (occupancy is not null)
+                    {
+                        <RadzenRow Gap="1rem">
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Total Units" Value="@occupancy.TotalUnits.ToString()" Icon="meeting_room" Color="Info" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Occupied" Value="@occupancy.OccupiedUnits.ToString()" Icon="person" Color="Success" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Available" Value="@occupancy.AvailableUnits.ToString()" Icon="door_open" Color="Warning" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Occupancy Rate" Value="@($"{occupancy.OccupancyRate:F1}%")" Icon="percent" Color="Primary" /></RadzenColumn>
+                        </RadzenRow>
+                        <RadzenRow Gap="1rem">
+                            <RadzenColumn SizeXS="12" SizeMD="5">
+                                <RadzenCard>
+                                    <h4 style="margin:0 0 1rem">Occupied vs Available</h4>
+                                    <RadzenChart Style="height:220px">
+                                        <RadzenPieSeries Data="@occupancyPie" CategoryProperty="Label" ValueProperty="Value" />
+                                        <RadzenLegend Position="LegendPosition.Bottom" />
+                                    </RadzenChart>
+                                </RadzenCard>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeMD="7">
+                                <RadzenCard>
+                                    <h4 style="margin:0 0 1rem">By Property</h4>
+                                    <RadzenDataGrid Data="@occupancy.PropertyOccupancy" TItem="PropertyOccupancyDto" AllowSorting="true" PageSize="8">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="PropertyOccupancyDto" Property="Address" Title="Property" MinWidth="160px" />
+                                            <RadzenDataGridColumn TItem="PropertyOccupancyDto" Property="TotalUnits" Title="Total" Width="80px" />
+                                            <RadzenDataGridColumn TItem="PropertyOccupancyDto" Property="OccupiedUnits" Title="Occupied" Width="90px" />
+                                            <RadzenDataGridColumn TItem="PropertyOccupancyDto" Property="OccupancyRate" Title="Rate" Width="120px">
+                                                <Template Context="p">
+                                                    <RadzenProgressBar Value="@((double)p.OccupancyRate)" ShowValue="true" Style="height:1.1rem"
+                                                                       ProgressBarStyle="@(p.OccupancyRate >= 80 ? ProgressBarStyle.Success : p.OccupancyRate >= 50 ? ProgressBarStyle.Warning : ProgressBarStyle.Danger)" />
+                                                </Template>
+                                            </RadzenDataGridColumn>
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </RadzenCard>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Maintenance" Icon="build">
+                <RadzenStack Gap="1.25rem">
+                    <RadzenCard>
+                        <RadzenRow Gap="1rem" AlignItems="AlignItems.End">
+                            <RadzenColumn SizeXS="12" SizeSM="4">
+                                <RadzenFormField Text="From" Variant="Variant.Outlined" Style="width:100%">
+                                    <RadzenDatePicker @bind-Value="mntStart" DateFormat="yyyy-MM-dd" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeSM="4">
+                                <RadzenFormField Text="To" Variant="Variant.Outlined" Style="width:100%">
+                                    <RadzenDatePicker @bind-Value="mntEnd" DateFormat="yyyy-MM-dd" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeSM="4">
+                                <RadzenButton Text="Generate" Icon="bar_chart" ButtonStyle="ButtonStyle.Primary"
+                                              Click="@LoadMaintenance" IsBusy="@loadingMnt" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenCard>
+                    @if (maintenance is not null)
+                    {
+                        <RadzenRow Gap="1rem">
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Total" Value="@maintenance.TotalRequests.ToString()" Icon="build" Color="Info" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Open" Value="@maintenance.OpenRequests.ToString()" Icon="radio_button_unchecked" Color="Danger" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="In Progress" Value="@maintenance.InProgressRequests.ToString()" Icon="autorenew" Color="Warning" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="3"><StatCard Title="Avg Resolution" Value="@($"{maintenance.AverageResolutionDays:F1} days")" Icon="timer" Color="Success" /></RadzenColumn>
+                        </RadzenRow>
+                        @if (maintenance.Breakdown.Any())
+                        {
+                            <RadzenCard>
+                                <h4 style="margin:0 0 1rem">By Property</h4>
+                                <RadzenDataGrid Data="@maintenance.Breakdown" TItem="MaintenanceBreakdownDto" AllowSorting="true" PageSize="8">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="MaintenanceBreakdownDto" Property="PropertyAddress" Title="Property" MinWidth="180px" />
+                                        <RadzenDataGridColumn TItem="MaintenanceBreakdownDto" Property="TotalRequests" Title="Total" Width="80px" />
+                                        <RadzenDataGridColumn TItem="MaintenanceBreakdownDto" Property="OpenRequests" Title="Open" Width="80px" />
+                                        <RadzenDataGridColumn TItem="MaintenanceBreakdownDto" Property="ResolvedRequests" Title="Resolved" Width="90px" />
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </RadzenCard>
+                        }
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Tenants" Icon="people">
+                <RadzenStack Gap="1.25rem">
+                    <RadzenCard>
+                        <RadzenButton Text="Generate" Icon="people" ButtonStyle="ButtonStyle.Primary"
+                                      Click="@LoadTenants" IsBusy="@loadingTen" />
+                    </RadzenCard>
+                    @if (tenants is not null)
+                    {
+                        <RadzenRow Gap="1rem">
+                            <RadzenColumn SizeXS="6" SizeLG="4"><StatCard Title="Total Tenants" Value="@tenants.TotalTenants.ToString()" Icon="people" Color="Info" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="4"><StatCard Title="Active" Value="@tenants.ActiveTenants.ToString()" Icon="how_to_reg" Color="Success" /></RadzenColumn>
+                            <RadzenColumn SizeXS="6" SizeLG="4"><StatCard Title="Expired Leases" Value="@tenants.TenantsWithExpiredLeases.ToString()" Icon="person_off" Color="Warning" /></RadzenColumn>
+                        </RadzenRow>
+                        <RadzenCard>
+                            <h4 style="margin:0 0 1rem">Tenant Details</h4>
+                            <RadzenDataGrid Data="@tenants.Tenants" TItem="TenantDetailDto"
+                                            AllowSorting="true" AllowPaging="true" PageSize="10"
+                                            AllowFiltering="true" FilterMode="FilterMode.SimpleWithMenu">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="Name" Title="Name" MinWidth="150px" />
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="Email" Title="Email" MinWidth="180px" />
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="PropertyAddress" Title="Property" MinWidth="160px" />
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="UnitNumber" Title="Unit" Width="90px" />
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="RentAmount" Title="Rent/mo" Width="110px" FormatString="{0:C0}" />
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="LeaseStatus" Title="Status" Width="110px">
+                                        <Template Context="t"><StatusBadge Status="@t.LeaseStatus" /></Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="TenantDetailDto" Property="LeaseEndDate" Title="Expires" Width="120px" FormatString="{0:yyyy-MM-dd}" />
+                                </Columns>
+                            </RadzenDataGrid>
+                        </RadzenCard>
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Lease Expiry" Icon="event_busy">
+                <RadzenStack Gap="1.25rem">
+                    <RadzenCard>
+                        <RadzenRow Gap="1rem" AlignItems="AlignItems.End">
+                            <RadzenColumn SizeXS="12" SizeSM="6">
+                                <RadzenFormField Text="Days ahead" Variant="Variant.Outlined" Style="width:100%">
+                                    <RadzenNumeric @bind-Value="expiryDays" Min="7" Max="365" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn SizeXS="12" SizeSM="6">
+                                <RadzenButton Text="Generate" Icon="event_busy" ButtonStyle="ButtonStyle.Primary"
+                                              Click="@LoadExpiry" IsBusy="@loadingExp" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenCard>
+                    @if (expiry is not null)
+                    {
+                        <RadzenCard>
+                            <h4 style="margin:0 0 .5rem">
+                                <RadzenIcon Icon="warning_amber" Style="color:var(--rz-warning);vertical-align:middle;margin-right:.35rem" />
+                                @expiry.ExpiringLeases lease@(expiry.ExpiringLeases != 1 ? "s" : "") expiring within @expiry.DaysAhead days
+                            </h4>
+                        </RadzenCard>
+                        @if (expiry.Leases.Any())
+                        {
+                            <RadzenCard>
+                                <RadzenDataGrid Data="@expiry.Leases" TItem="ExpiringLeaseDto" AllowSorting="true" AllowPaging="true" PageSize="10">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="ExpiringLeaseDto" Property="TenantName" Title="Tenant" MinWidth="150px" />
+                                        <RadzenDataGridColumn TItem="ExpiringLeaseDto" Property="PropertyAddress" Title="Property" MinWidth="160px" />
+                                        <RadzenDataGridColumn TItem="ExpiringLeaseDto" Property="UnitNumber" Title="Unit" Width="90px" />
+                                        <RadzenDataGridColumn TItem="ExpiringLeaseDto" Property="ExpiryDate" Title="Expires" Width="130px" FormatString="{0:yyyy-MM-dd}" />
+                                        <RadzenDataGridColumn TItem="ExpiringLeaseDto" Property="DaysUntilExpiry" Title="Days Left" Width="110px">
+                                            <Template Context="l">
+                                                <span style="@($"color:{DaysColor(l.DaysUntilExpiry)};font-weight:600")">@l.DaysUntilExpiry days</span>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </RadzenCard>
+                        }
+                        else
+                        {
+                            <EmptyState Message="No leases expiring in this period." Icon="check_circle" />
+                        }
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+
+        </Tabs>
+    </RadzenTabs>
+</RadzenStack>
