@@ -2,14 +2,18 @@
 {
     public partial class MainLayout
     {
-        #region Dependencies
+        [Inject]
+        private AuthStateService AuthStateService { get; set; } = null!;
 
-        #endregion
-
-        #region Fields
+        [Inject]
+        private NavigationManager Navigation { get; set; } = null!;
 
         private bool sidebar1Expanded = true;
 
-        #endregion
+        private async Task Logout()
+        {
+            await AuthStateService.LogoutAsync();
+            Navigation.NavigateTo("/login", true);
+        }
     }
 }
