@@ -1,0 +1,26 @@
+﻿
+@code
+{
+    #region Depedencies
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = null!;
+
+    #endregion
+
+    #region Parameter
+
+    [Parameter]
+    public string Page { get; set; } = "/404";
+
+    #endregion
+
+    #region LifeCycle Methods
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo(Page, replace: true);
+    }
+
+    #endregion
+}

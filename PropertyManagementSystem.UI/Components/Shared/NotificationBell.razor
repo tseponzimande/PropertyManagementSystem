@@ -1,0 +1,14 @@
+﻿<RadzenButton ButtonStyle="ButtonStyle.Light"
+              Variant="Variant.Text"
+              Click="@OpenNotifications"
+              Style="position:relative">
+
+    <RadzenIcon Icon="notifications" Style="font-size:1.5rem" />
+
+    @if (unreadCount > 0)
+    {
+        <RadzenBadge Text="@(unreadCount > 99 ? "99+" : unreadCount.ToString())"
+                     Style="position:absolute;top:-4px;right:-4px" />
+    }
+
+</RadzenButton>

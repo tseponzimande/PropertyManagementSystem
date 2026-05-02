@@ -1,0 +1,29 @@
+@implements IDisposable
+
+@if (Loader.IsLoading)
+{
+    <RadzenStack Style="position:fixed; inset:0; z-index:9999; backdrop-filter:blur(3px); background:rgba(0,0,0,.55);"
+                 AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.Center">
+
+        <RadzenCard Style="display:flex; flex-direction:column; align-items:center; gap:1rem;
+                               padding:2rem 3rem;
+                               border-radius:.75rem;
+                               background: var(--rz-base-800);
+                               border: 1px solid var(--rz-base-600);">
+
+            <RadzenProgressBarCircular Value="100"
+                                       ShowValue="false"
+                                       Mode="ProgressBarMode.Indeterminate"
+                                       Size="ProgressBarCircularSize.Large" />
+
+            @if (!string.IsNullOrEmpty(Loader.Message))
+            {
+                <RadzenText Text="@Loader.Message"
+                            TextStyle="TextStyle.Body2"
+                            Style="color: var(--rz-text-secondary-color); margin:0;" />
+            }
+
+        </RadzenCard>
+    </RadzenStack>
+}

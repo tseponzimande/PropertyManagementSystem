@@ -1,0 +1,17 @@
+﻿
+@if (show && count > 0)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" Close="@(() => show = false)">
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".5rem">
+
+            <RadzenIcon Icon="event_busy" />
+
+            <span><strong>@count</strong> lease@(count != 1 ? "s" : "") expiring in the next 30 days.</span>
+
+            <RadzenButton Text="View Report" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Text" Size="ButtonSize.Small" Click="@(() => NavigationManager.NavigateTo("/reports"))" />
+
+        </RadzenStack>
+
+    </RadzenAlert>
+}

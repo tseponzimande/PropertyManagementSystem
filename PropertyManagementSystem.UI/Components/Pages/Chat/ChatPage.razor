@@ -1,0 +1,171 @@
+﻿@page "/chat"
+
+<PageTitle>Chat — PMS</PageTitle>
+
+<div class="chat-shell">
+
+    <div class="chat-sidebar @(showSidebar ? "chat-sidebar--open" : "")">
+        <div class="chat-sidebar-header">
+            <h3 style="margin:0">Messages</h3>
+            <RadzenButton Icon="edit_note" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                          Tooltip="New conversation" Click="@OpenNewConversationPicker" />
+        </div>
+
+        <div style="padding:.5rem .75rem">
+            <RadzenTextBox @bind-Value="search" Placeholder="Search…" Style="width:100%"
+                           Change="@SearchConversations" />
+        </div>
+
+        <div class="chat-convo-list">
+            @if (loadingConvos)
+            {
+                <div style="padding:1rem;text-align:center">
+                    <RadzenProgressBarCircular Value="100" ShowValue="false"
+                                               Mode="ProgressBarMode.Indeterminate"
+                                               Size="ProgressBarCircularSize.Small" />
+                </div>
+            }
+            else if (!filteredConvos.Any())
+            {
+                <p style="padding:1rem;opacity:.55;font-size:.85rem;text-align:center">
+                    No conversations yet.
+                </p>
+            }
+            else
+            {
+                @foreach (var c in filteredConvos)
+                {
+                    <div class="chat-convo-item @(activeOtherUserId == c.UserId ? "chat-convo-item--active" : "")"
+                         @onclick="@(() => SelectConversation(c))">
+                        <div class="chat-convo-avatar">@FirstLetter(c.UserName)</div>
+                        <div class="chat-convo-info">
+                            <div class="chat-convo-name">
+                                @c.UserName
+                                @if (c.UnreadCount > 0)
+                                {
+                                    <span class="chat-unread-badge">@c.UnreadCount</span>
+                                }
+                            </div>
+                            <div class="chat-convo-preview">@(c.LastMessage ?? "No messages yet")</div>
+                        </div>
+                        <div class="chat-convo-meta">
+                            @if (c.LastMessageTime != default)
+                            {
+                                <span class="chat-convo-time">@FormatTime(c.LastMessageTime)</span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="chat-main">
+        @if (activeOtherUserId == Guid.Empty)
+        {
+            <div class="chat-empty-state">
+                <RadzenIcon Icon="chat" Style="font-size:4rem" />
+                <p style="margin:0;font-size:1rem">Select a conversation or start a new one</p>
+
+                <RadzenButton Text="New Message" Icon="edit_note" ButtonStyle="ButtonStyle.Primary" Click="@OpenNewConversationPicker" />
+            </div>
+        }
+        else
+        {
+            <div class="chat-thread-header">
+                <div class="chat-convo-avatar">@FirstLetter(activeUserName)</div>
+                <div>
+                    <p style="margin:0;font-weight:600">@activeUserName</p>
+                    @if (isOtherUserTyping)
+                    {
+                        <p style="margin:0;font-size:.75rem;color:var(--rz-primary);font-style:italic">typing…</p>
+                    }
+                    else
+                    {
+                        <p style="margin:0;font-size:.75rem;opacity:.6">@activeUserRole</p>
+                    }
+                </div>
+                <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Style="margin-left:auto" Click="@CloseThread" />
+            </div>
+
+            <div id="chat-messages-scroll" class="chat-messages">
+                @if (loadingMessages)
+                {
+                    <div style="display:flex;justify-content:center;padding:2rem">
+                        <RadzenProgressBarCircular Value="100" ShowValue="false"
+                                                   Mode="ProgressBarMode.Indeterminate"
+                                                   Size="ProgressBarCircularSize.Small" />
+                    </div>
+                }
+                else if (!messages.Any())
+                {
+                    <p style="text-align:center;opacity:.5;padding:2rem;font-size:.85rem">
+                        No messages yet. Say hello!
+                    </p>
+                }
+                else
+                {
+                    @foreach (var msg in messages)
+                    {
+                        <ChatMessage Message="@msg" IsSent="@(msg.SenderId == currentUserId)" />
+                    }
+                }
+            </div>
+
+            @if (pendingFile is not null)
+            {
+                <div class="chat-attach-preview">
+                    <RadzenIcon Icon="attach_file" />
+                    <span>@pendingFile.Name (@FormatSize(pendingFile.Size))</span>
+                    <RadzenButton Icon="close" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                                  Click="@(() => pendingFile = null)" />
+                </div>
+            }
+
+            <div class="chat-compose">
+                <label class="chat-attach-btn" title="Attach file">
+                    <RadzenIcon Icon="attach_file" />
+                    <InputFile OnChange="@OnFileSelected" style="display:none"
+                               accept="image/*,.pdf,.doc,.docx,.xlsx" />
+                </label>
+
+                <RadzenTextBox @bind-Value="messageText"
+                               id="chat-input"
+                               Placeholder="Type a message…"
+                               Style="flex:1"
+                               @oninput="@OnTyping"
+                               @onkeydown="@OnKeyDown" />
+
+                <RadzenButton Icon="send" ButtonStyle="ButtonStyle.Primary"
+                              Click="@SendMessage" IsBusy="@sending"
+                              Disabled="@(string.IsNullOrWhiteSpace(messageText) && pendingFile is null)" />
+            </div>
+        }
+    </div>
+</div>
+
+@if (showPickerPanel)
+{
+    <div class="picker-overlay" @onclick="@(() => showPickerPanel = false)">
+        <div class="picker-card" @onclick:stopPropagation="true">
+            <h4 style="margin:0 0 1rem">Start New Conversation</h4>
+            <RadzenFormField Text="Select User" Variant="Variant.Outlined" Style="width:100%">
+                <RadzenDropDown @bind-Value="pickedUserId"
+                                Data="@newPickerUsers"
+                                ValueProperty="Id" TextProperty="Name"
+                                Style="width:100%" Placeholder="Choose a user" />
+            </RadzenFormField>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End"
+                         Gap=".5rem" Style="margin-top:1rem">
+
+                <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                              Click="@(() =>showPickerPanel = false)" />
+
+                <RadzenButton Text="Start Chat" Icon="chat" ButtonStyle="ButtonStyle.Primary"
+                              Click="@StartNewConversation"
+                              Disabled="@(pickedUserId == Guid.Empty)" />
+            </RadzenStack>
+        </div>
+    </div>
+}
