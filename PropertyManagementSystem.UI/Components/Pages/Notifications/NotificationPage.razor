@@ -1,0 +1,76 @@
+﻿@page "/notifications"
+
+<PageTitle>Notifications — PMS</PageTitle>
+
+<RadzenStack Gap="1.25rem" Style="max-width:820px">
+
+    <PageHeader Title="Notifications" Icon="notifications" Subtitle="Your alerts and system messages">
+        <Actions>
+            @if (unread > 0)
+            {
+                <RadzenButton Text="Mark All Read"
+                              Icon="done_all"
+                              ButtonStyle="ButtonStyle.Light"
+                              Variant="Variant.Outlined"
+                              Click="@MarkAllRead"
+                              IsBusy="@markingAll" />
+            }
+        </Actions>
+    </PageHeader>
+
+    <RadzenSelectBar @bind-Value="filter" TValue="string" Change="@ApplyFilter">
+        <Items>
+            <RadzenSelectBarItem Text="All" Value="all" />
+            <RadzenSelectBarItem Text="@($"Unread ({unread})")" Value="unread" />
+        </Items>
+    </RadzenSelectBar>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat">
+            @error
+        </RadzenAlert>
+    }
+
+    @if (loading)
+    {
+        <div style="display:flex;justify-content:center;padding:3rem">
+            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" ShowValue="false" />
+        </div>
+    }
+    else if (!rows.Any())
+    {
+        <EmptyState Message="@(filter == "unread" ? "No unread notifications." : "No notifications yet.")" Icon="notifications_none" />
+    }
+    else
+    {
+        <RadzenDataList Data="@rows" TItem="NotificationDto">
+            <Template Context="n">
+                <RadzenCard Style="cursor:pointer; margin-bottom:.5rem;" Click="@(() => MarkRead(n))">
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+
+                        <RadzenIcon Icon="@GetIcon(n.Type)" />
+
+                        <RadzenStack Gap="0">
+                            <div style="font-size:.9rem">@n.Message</div>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap=".5rem">
+                                <RadzenBadge Text="@n.Type.ToUpper()" />
+                                <span style="font-size:.72rem; opacity:.7">
+                                    @n.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                </span>
+                            </RadzenStack>
+                        </RadzenStack>
+
+                        @if (!n.IsRead)
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Primary" Text="" />
+                        }
+
+                    </RadzenStack>
+                </RadzenCard>
+            </Template>
+        </RadzenDataList>
+    }
+</RadzenStack>
