@@ -1,0 +1,39 @@
+﻿<RadzenCard class="rz-p-4 rz-shadow-2">
+
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 Gap="12px">
+
+        <RadzenGravatar Icon="@Icon"
+                        Size="64"
+                        Style=@($"background:var(--rz-{Color});color:white") />
+
+        <RadzenStack Gap="2px">
+
+            @if (IsLoading)
+            {
+                <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate"
+                                           ShowValue="false"
+                                           Size="ProgressBarCircularSize.Small" />
+            }
+            else
+            {
+                <RadzenText Text="@Value" TextStyle="TextStyle.H5" />
+            }
+
+            <RadzenText Text="@Title"
+                        TextStyle="TextStyle.Overline"
+                        Style="color:var(--rz-text-secondary-color);font-size:0.75rem;" />
+
+            @if (!string.IsNullOrEmpty(SubText))
+            {
+                <RadzenText Text="@SubText"
+                            TextStyle="TextStyle.Caption"
+                            Style="color:var(--rz-text-secondary-color);font-size:0.7rem;" />
+            }
+
+        </RadzenStack>
+
+    </RadzenStack>
+
+</RadzenCard>

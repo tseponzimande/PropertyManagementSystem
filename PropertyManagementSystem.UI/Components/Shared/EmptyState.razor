@@ -1,0 +1,21 @@
+﻿<RadzenCard Style="text-align:center; padding:2rem;">
+
+    <RadzenStack AlignItems="AlignItems.Center" Gap="0.75rem">
+
+        <RadzenIcon Icon="@Icon"
+                    Style="font-size:3rem; opacity:0.35" />
+
+        <RadzenText Text="@Message"
+                    TextStyle="TextStyle.Body2"
+                    Style="opacity:0.8" />
+
+        @if (ChildContent is not null)
+        {
+            <RadzenStack Style="margin-top:1rem">
+                @ChildContent
+            </RadzenStack>
+        }
+
+    </RadzenStack>
+
+</RadzenCard>

@@ -22,3 +22,8 @@ global using PropertyManagementSystem.Application.DTOs.AuditLog;
 global using PropertyManagementSystem.UI.Dialogs;
 global using Microsoft.JSInterop;
 global using PropertyManagementSystem.UI.Constants;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Components.Forms;
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.AspNetCore.SignalR;
+global using PropertyManagementSystem.UI.Components.Utilities;

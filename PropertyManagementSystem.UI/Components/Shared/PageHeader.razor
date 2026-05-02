@@ -1,0 +1,24 @@
+﻿
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" Gap="1rem" Class="ph-wrapper">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem" Class="ph-left">
+
+        <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width:2.6rem; height:2.6rem; border-radius:50%; background:var(--rz-base-700); color:var(--rz-primary);">
+            <RadzenIcon Icon="@Icon" Style="font-size:1.3rem;" />
+        </RadzenStack>
+
+        <div>
+            <h2 class="ph-title">@Title</h2>
+            @if (!string.IsNullOrEmpty(Subtitle))
+            {
+                <p class="ph-subtitle">@Subtitle</p>
+            }
+        </div>
+    </RadzenStack>
+
+    @if (Actions is not null)
+    {
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap" AlignItems="AlignItems.Center" Class="ph-actions">
+            @Actions
+        </RadzenStack>
+    }
+</RadzenStack>

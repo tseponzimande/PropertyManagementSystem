@@ -1,0 +1,45 @@
+﻿<RadzenRow JustifyContent="@(IsSent ? JustifyContent.End : JustifyContent.Start)" Style="margin:.35rem 0">
+    <RadzenColumn Size="12" SizeMD="8" SizeLG="6">
+        <RadzenCard Style="@BubbleStyle">
+
+            <RadzenStack Gap="4px">
+
+                @if (!string.IsNullOrEmpty(Message.AttachmentUrl))
+                {
+                    <RadzenLink Path="@Message.AttachmentUrl" Target="_blank" Style="font-size:.8rem;opacity:.85">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="4px">
+                            <RadzenIcon Icon="attach_file" Style="font-size:.95rem" />
+                            <span>@(Message.AttachmentFileName ?? "Attachment")</span>
+
+                            @if (Message.AttachmentFileSize.HasValue)
+                            {
+                                <span style="opacity:.65;font-size:.72rem">
+                                    (@FormatSize(Message.AttachmentFileSize.Value))
+                                </span>
+                            }
+                        </RadzenStack>
+                    </RadzenLink>
+                }
+
+                @if (!string.IsNullOrEmpty(Message.Content))
+                {
+                    <RadzenText Text="@Message.Content" Style="font-size:.9rem;line-height:1.45" />
+                }
+
+                <RadzenStack Orientation="Orientation.Horizontal"
+                             JustifyContent="JustifyContent.End"
+                             AlignItems="AlignItems.Center"
+                             Gap="4px">
+
+                    <RadzenText Text="@TimeText" Style="font-size:.7rem;opacity:.7" />
+
+                    @if (IsSent)
+                    {
+                        <RadzenIcon Icon="@StatusIcon" Style="@StatusStyle" />
+                    }
+                </RadzenStack>
+
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>

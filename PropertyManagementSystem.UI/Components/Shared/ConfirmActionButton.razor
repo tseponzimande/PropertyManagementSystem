@@ -1,0 +1,37 @@
+@if (!confirming)
+{
+    <RadzenButton Text="@Label"
+                  Icon="@Icon"
+                  ButtonStyle="@Style"
+                  Size="@Size"
+                  Variant="@Variant"
+                  Click="@(() => confirming = true)"
+                  Disabled="@Disabled" />
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 Gap=".3rem">
+
+        @if (!string.IsNullOrEmpty(ConfirmText))
+        {
+            <RadzenText Text="@ConfirmText"
+                        TextStyle="TextStyle.Body2"
+                        Style="color: var(--rz-danger); white-space: nowrap;" />
+        }
+
+        <RadzenButton Text="Yes"
+                      Icon="check"
+                      ButtonStyle="ButtonStyle.Danger"
+                      Size="ButtonSize.Small"
+                      Click="@Confirm"
+                      IsBusy="@busy" />
+
+        <RadzenButton Text="No"
+                      Icon="close"
+                      ButtonStyle="ButtonStyle.Light"
+                      Size="ButtonSize.Small"
+                      Click="@(() => confirming = false)" />
+    </RadzenStack>
+}

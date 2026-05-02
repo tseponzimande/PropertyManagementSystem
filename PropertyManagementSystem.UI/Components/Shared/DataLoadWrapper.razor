@@ -1,0 +1,37 @@
+@if (IsLoading)
+{
+    @if (LoadingContent is not null)
+    {
+        @LoadingContent
+    }
+    else
+    {
+        <div style="display:flex;justify-content:center;padding:3rem">
+            <RadzenProgressBarCircular Value="100" ShowValue="false"
+                                       Mode="ProgressBarMode.Indeterminate" />
+        </div>
+    }
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat">
+        <RadzenIcon Icon="error_outline" Style="margin-right:.4rem;vertical-align:middle" />
+        @ErrorMessage
+    </RadzenAlert>
+}
+else if (!HasData)
+{
+    @if (EmptyContent is not null)
+    {
+        @EmptyContent
+    }
+    else
+    {
+        <EmptyState Message="@EmptyMessage" Icon="@EmptyIcon" />
+    }
+}
+else
+{
+    @DataContent
+}
+
